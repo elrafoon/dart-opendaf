@@ -1,0 +1,8 @@
+name: opendaf
+version: 1.0.0
+dependencies:
+  angular: '>=0.11.0 <0.13.0'
+dev_dependencies:
+transformers:
+- angular
+
