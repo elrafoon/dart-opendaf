@@ -45,6 +45,30 @@ class OpenDAF {
         return m;
       });
   
+  Future<Command> command(String name) => _http.get(prefix + "commands/" + name)
+      .then((HttpResponse _) => new Command.fromJson(_.data));
+  Future<VTQ> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
+  Future<dynamic> commandValue(String commandName) => vtq(commandName).then((VTQ _) => _.value);
+  
+  Future<Map<String, Command>> commands(Iterable<String> names) => _http.get(prefix + "commands/?names=" + names.join(","))
+      .then((HttpResponse _) {
+        Map<String, Command> m = new Map<String, Command>();
+        Map<String, dynamic> rawM = _.data;
+        rawM.forEach((String name, dynamic json) { m[name] = new Command.fromJson(json); });
+        return m;
+      });
+  Future<Map<String, VTQ>> commandVTs(Iterable<String> names) => commands(names)
+      .then((Map<String, Command> _) {
+        Map<String, VT> m = new Map<String, VT>();
+        _.forEach((String name, Command cmd) { m[name] = cmd.vt; });
+        return m;
+      });
+  Future<Map<String, dynamic>> commandValues(Iterable<String> names) => commandVTs(names)
+      .then((Map<String, VTQ> _) {
+        Map<String, dynamic> m = new Map<String, dynamic>();
+        _.forEach((String name, VT vt) { m[name] = vt.value; });
+        return m;
+      });
   Future writeCommand(String command, String valueWithPrefix) => 
       _http.put(prefix + "commands/" + command, null, params : {"value" : valueWithPrefix});
   
