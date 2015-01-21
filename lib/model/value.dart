@@ -1,15 +1,7 @@
 part of opendaf;
 
 class Value {
-  static const int DT_BINARY = 1;
-  static const int DT_QUATERNARY = 2;
-  static const int DT_INTEGER = 3;
-  static const int DT_LONG = 4;
-  static const int DT_FLOAT = 5;
-  static const int DT_DOUBLE = 6;
-  static const int DT_STRING = 7;
-  
-  static dynamic getDataType(String valueWithPrefix) {
+  static String getPrefix(String valueWithPrefix) {
     if(valueWithPrefix.length < 2)
       return null;
     else {
@@ -20,27 +12,39 @@ class Value {
       }
     }
   }
+  
+  static int getDataType(String valueWithPrefix) => Datatype.fromPrefix(getPrefix(valueWithPrefix));
 
   static dynamic parseValueWithPrefix(String valueWithPrefix) {
     if(valueWithPrefix == null)
       return null;
     
-    var data_type = getDataType(valueWithPrefix);
-    if(data_type == null)
+    var prefix = getPrefix(valueWithPrefix);
+    if(prefix == null)
       return null;
     else {
       String value = valueWithPrefix.substring(1);
-      switch(data_type) {
-        case 'b':
-          return int.parse(value) != 0;
-        case 'i':
-        case 'l':
-        case 'q':
+      switch(Datatype.fromPrefix(prefix)) {
+        case Datatype.DT_BINARY:
+          switch(value.toLowerCase()) {
+            case "0":
+            case "false":
+              return false;
+            case "1":
+            case "true":
+              return true;
+            default:
+              throw ArgumentError("Can't parseValueWithPrefix(${valueWithPrefix})!");
+          }
+          break;
+        case Datatype.DT_INTEGER:
+        case Datatype.DT_LONG:
+        case Datatype.DT_QUATERNARY:
           return int.parse(value);
-        case 'f':
-        case 'd':
+        case Datatype.DT_FLOAT:
+        case Datatype.DT_DOUBLE:
           return double.parse(value);
-        case 's':
+        case Datatype.DT_STRING:
           return value;
         default:
           return null;
@@ -49,22 +53,24 @@ class Value {
   }
   
   static String formatAs(dynamic value, int datatype) {
+    String prefix = Datatype.toPrefix(datatype);
+    
     switch(datatype) {
-      case DT_BINARY:
+      case Datatype.DT_BINARY:
         bool b = value;
-        return "b" + (b ? "1" : "0");
-      case DT_QUATERNARY:
-        return "q" + int.parse(value.toString()).toString();
-      case DT_INTEGER:
-        return "i" + int.parse(value.toString()).toString();
-      case DT_LONG:
-        return "l" + int.parse(value.toString()).toString();
-      case DT_FLOAT:
-        return "f" + double.parse(value.toString()).toString();
-      case DT_DOUBLE:
-        return "d" + double.parse(value.toString()).toString();
-      case DT_STRING:
-        return "s" + value.toString();
+        return prefix + (b ? "1" : "0");
+      case Datatype.DT_QUATERNARY:
+        return prefix + int.parse(value.toString()).toString();
+      case Datatype.DT_INTEGER:
+        return prefix + int.parse(value.toString()).toString();
+      case Datatype.DT_LONG:
+        return prefix + int.parse(value.toString()).toString();
+      case Datatype.DT_FLOAT:
+        return prefix + double.parse(value.toString()).toString();
+      case Datatype.DT_DOUBLE:
+        return prefix + double.parse(value.toString()).toString();
+      case Datatype.DT_STRING:
+        return prefix + value.toString();
       default:
         return null;
     }

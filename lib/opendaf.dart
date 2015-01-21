@@ -3,10 +3,12 @@ library opendaf;
 import 'dart:async';
 import 'package:angular/angular.dart';
 
+part 'model/datatype.dart';
 part 'model/value.dart';
 part 'model/range.dart';
 part 'model/vt.dart';
 part 'model/vtq.dart';
+part 'model/communication_object.dart';
 part 'model/measurement.dart';
 
 @Injectable()

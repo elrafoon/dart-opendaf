@@ -1,13 +1,12 @@
 part of opendaf;
 
-class Measurement {
-  final String name, address, datatype, rawDatatype;
-  final Range euRange, rawRange;
+class Measurement extends CommunicationObject {
   final VTQ vtq;
   
-  Measurement(this.name, this.address, this.datatype, this.rawDatatype, this.euRange, this.rawRange, this.vtq);
+  Measurement(name, address, datatype, rawDatatype, euRange, rawRange, this.vtq) :
+    super(name, address, datatype, rawDatatype, euRange, rawRange);
   
-  Measurement.fromJson(Map<String, dynamic> json) : this(json["name"], json["address"], json["datatype"],
-      json["raw-datatype"], new Range.fromJson(json["eu-range"]), new Range.fromJson(json["raw-range"]),
+  Measurement.fromJson(Map<String, dynamic> json) : this(json["name"], json["address"], Datatype.fromPrefix(json["datatype"]),
+      Datatype.fromPrefix(json["raw-datatype"]), new Range.fromJson(json["eu-range"]), new Range.fromJson(json["raw-range"]),
       new VTQ.fromJson(json["vtq"]));
 }
