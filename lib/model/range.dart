@@ -5,5 +5,5 @@ class Range {
   
   Range(this.lo, this.hi);
   Range.fromJson(List<dynamic> json) :
-    this(Value.parseValueWithPrefix(json[0]), Value.parseValueWithPrefix(json[1]));
+    this((json == null) ? null : Value.parseValueWithPrefix(json[0]), (json == null) ? null : Value.parseValueWithPrefix(json[1]));
 }

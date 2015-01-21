@@ -5,7 +5,13 @@ class VTQ extends VT {
 
     VTQ(var value, DateTime time, this.quality, String dataType) : super(value, time, dataType);
 
-    VTQ.fromJson(List json) : this(Value.parseValueWithPrefix(json[0]), VT.parseTime(json[1]), json[2], Value.getDataType(json[0]));
+    VTQ.fromJson(List json) : 
+      this(
+          (json == null) ? null : Value.parseValueWithPrefix(json[0]), 
+          (json == null) ? null : VT.parseTime(json[1]),
+          (json == null) ? null : json[2],
+          (json == null) ? null : Value.getDataType(json[0])
+      );
 
     String getQualityClass() {
       if((quality & 0xC0) == 0xC0)

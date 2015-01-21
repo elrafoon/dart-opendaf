@@ -10,6 +10,7 @@ part 'model/vt.dart';
 part 'model/vtq.dart';
 part 'model/communication_object.dart';
 part 'model/measurement.dart';
+part 'model/command.dart';
 
 @Injectable()
 class OpenDAF {

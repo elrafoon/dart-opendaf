@@ -7,7 +7,11 @@ class VT {
 
     VT(this.value, this.timestamp, this.dataType);
 
-    VT.fromJson(List json) : this(Value.parseValueWithPrefix(json[0]), parseTime(json[1]), Value.getDataType(json[0]));
+    VT.fromJson(List json) : 
+      this(
+          (json == null) ? null : Value.parseValueWithPrefix(json[0]),
+          (json == null) ? null : parseTime(json[1]), Value.getDataType(json[0])
+      );
 
     /**
      * Converts list in form [seconds, microseconds] to DateTime.
