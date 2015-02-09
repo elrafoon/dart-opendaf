@@ -3,7 +3,7 @@ part of opendaf;
 class VTQ extends VT {
     int quality;
 
-    VTQ(var value, DateTime time, this.quality, String dataType) : super(value, time, dataType);
+    VTQ(var value, DateTime time, this.quality, int dataType) : super(value, time, dataType);
 
     VTQ.fromJson(List json) : 
       this(

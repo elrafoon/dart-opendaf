@@ -3,14 +3,15 @@ part of opendaf;
 class VT {
     var value;
     DateTime timestamp;
-    String dataType;
+    int dataType;
 
     VT(this.value, this.timestamp, this.dataType);
 
     VT.fromJson(List json) : 
       this(
           (json == null) ? null : Value.parseValueWithPrefix(json[0]),
-          (json == null) ? null : parseTime(json[1]), Value.getDataType(json[0])
+          (json == null) ? null : parseTime(json[1]),
+          Value.getDataType(json[0])
       );
 
     /**
