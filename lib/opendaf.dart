@@ -47,7 +47,7 @@ class OpenDAF {
   
   Future<Command> command(String name) => _http.get(prefix + "commands/" + name)
       .then((HttpResponse _) => new Command.fromJson(_.data));
-  Future<VTQ> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
+  Future<VT> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
   Future<dynamic> commandValue(String commandName) => vtq(commandName).then((VTQ _) => _.value);
   
   Future<Map<String, Command>> commands(Iterable<String> names) => _http.get(prefix + "commands/?names=" + names.join(","))
