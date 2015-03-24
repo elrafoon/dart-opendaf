@@ -94,4 +94,7 @@ class OpenDAF {
         m[names[i]] = l[i];
       return m;
     });
+  
+  Future reconfigure() =>
+      _http.post(prefix + "management/reconfigure", "");
 }
