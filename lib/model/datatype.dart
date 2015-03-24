@@ -34,4 +34,17 @@ class Datatype {
       default:            return null;
     }
   }
+  
+  static String getDescription(int datatype) {
+    switch(datatype) {
+      case DT_BINARY:     return 'binary';
+      case DT_QUATERNARY: return 'quaternary';
+      case DT_INTEGER:    return 'integer';
+      case DT_LONG:       return 'long';
+      case DT_FLOAT:      return 'float';
+      case DT_DOUBLE:     return 'double';
+      case DT_STRING:     return 'string';
+      default:            return null;
+    }
+  }
 }
