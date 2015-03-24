@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:angular/angular.dart';
 
 part 'model/datatype.dart';
+part 'model/quality.dart';
 part 'model/value.dart';
 part 'model/range.dart';
 part 'model/vt.dart';
