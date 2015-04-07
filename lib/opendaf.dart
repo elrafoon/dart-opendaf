@@ -96,6 +96,26 @@ class OpenDAF {
       return m;
     });
   
-  Future reconfigure() =>
-      _http.post(prefix + "management/reconfigure", "");
+  static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2;
+  
+  Future reconfigure([int mask = RCFG_OPENDAF]) {
+    print("Reconfiguring with mask $mask");
+    Future f = ((mask & RCFG_OPENDAF) != 0) ? _http.post(prefix + "management/reconfigure", "") : new Future.value();
+    return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => _http.post(archPrefix + "management/reconfigure", "")) : f;
+  }
+  
+  int _parsePid(String sPid) {
+    try {
+      return int.parse(sPid);
+    }
+    catch(e) {
+      return null;
+    }
+  }
+  
+  Future<int> get pid =>
+      _http.get(prefix + "management/pid").then((HttpResponse rsp) => _parsePid(rsp.data.toString()));
+
+  Future<int> get archivePid =>
+      _http.get(archPrefix + "management/pid").then((HttpResponse rsp) => _parsePid(rsp.data.toString()));
 }
