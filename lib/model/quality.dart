@@ -100,4 +100,21 @@ class Quality {
     
     return s.toString();
   }
+  
+  static int combine(int q1, int q2) {
+    if(isGood(q1)) {
+      if(isGood(q2))
+        return q1;
+      else
+        return q2;
+    }
+    else if(isUncertain(q1)) {
+      if(isGood(q2) || isUncertain(q2))
+        return q1;
+      else
+        return q2;
+    }
+    else
+      return q1;
+  }
 }
