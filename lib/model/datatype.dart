@@ -1,6 +1,7 @@
 part of opendaf;
 
 class Datatype {
+  static const int DT_EMPTY = 0;
   static const int DT_BINARY = 1;
   static const int DT_QUATERNARY = 2;
   static const int DT_INTEGER = 3;
@@ -10,6 +11,9 @@ class Datatype {
   static const int DT_STRING = 7;
   
   static int fromPrefix(String prefix) {
+    if(prefix == null)
+      return DT_EMPTY;
+    
     switch(prefix) {
       case 'b': return DT_BINARY;
       case 'q': return DT_QUATERNARY;

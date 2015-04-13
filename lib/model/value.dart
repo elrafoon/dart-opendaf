@@ -2,7 +2,7 @@ part of opendaf;
 
 class Value {
   static String getPrefix(String valueWithPrefix) {
-    if(valueWithPrefix.length < 2)
+    if(valueWithPrefix == null || valueWithPrefix.length < 2)
       return null;
     else {
       if(valueWithPrefix.compareTo("<empty>") == 0)
