@@ -81,12 +81,7 @@ class OpenDAF {
     return _http.get(archPrefix + "measurements/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}", params: params)
     .then((HttpResponse _) {
       List rawSamples = _.data[name];
-      List<VTQ> samples = rawSamples.map((_) => new VTQ.fromJson(_)).toList();
-      if(samples.length > 0) {
-        if(samples.last.timestamp.compareTo(to) != 0)
-          samples.add(new VTQ(samples.last.value, to, samples.last.quality, samples.last.dataType));
-      }
-      return samples;
+      return rawSamples.map((_) => new VTQ.fromJson(_)).toList();
     });
   }
   
