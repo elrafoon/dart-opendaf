@@ -58,7 +58,7 @@ class OpenDAF {
         rawM.forEach((String name, dynamic json) { m[name] = new Command.fromJson(json); });
         return m;
       });
-  Future<Map<String, VTQ>> commandVTs(Iterable<String> names) => commands(names)
+  Future<Map<String, VT>> commandVTs(Iterable<String> names) => commands(names)
       .then((Map<String, Command> _) {
         Map<String, VT> m = new Map<String, VT>();
         _.forEach((String name, Command cmd) { m[name] = cmd.vt; });
