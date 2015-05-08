@@ -93,7 +93,7 @@ class Quality {
     if(lim != 0) {
       String desc = limitDesc[lim];
       if(desc == null)
-        desc = _toHex(lim >> LIMIT_SHIFT);
+        desc = _toHex(lim >> LIMITS_SHIFT);
       
       s.write(", $desc");
     }
