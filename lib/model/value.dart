@@ -34,7 +34,7 @@ class Value {
             case "true":
               return true;
             default:
-              throw ArgumentError("Can't parseValueWithPrefix(${valueWithPrefix})!");
+              throw new ArgumentError("Can't parseValueWithPrefix(${valueWithPrefix})!");
           }
           break;
         case Datatype.DT_INTEGER:
