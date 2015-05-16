@@ -96,6 +96,29 @@ class OpenDAF {
       return m;
     });
   
+  Future<List<VT>> commandHistory(String name, DateTime from, DateTime to, {Duration resample}) {
+    Map<String, dynamic> params = new Map<String, dynamic>();
+    if(resample != null)
+      params["resample"] = resample.inMilliseconds.toDouble() / 1000.0;
+    
+    return _http.get(archPrefix + "commands/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}", params: params)
+    .then((HttpResponse _) {
+      List rawSamples = _.data[name];
+      return rawSamples.map((_) => new VT.fromJson(_)).toList();
+    });
+  }
+  
+  Future<Map<String, List<VT>>> commandsHistory(List<String> names, DateTime from, DateTime to, {Duration resample}) =>
+    Future.wait(
+      names.map((_) => commandHistory(_, from, to, resample: resample))
+    )
+    .then((List<List<VT>> l) {
+      Map<String, List<VT>> m = new Map<String, List<VT>>();
+      for(int i = 0; i < names.length; ++i)
+        m[names[i]] = l[i];
+      return m;
+    });
+
   static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2;
   
   Future reconfigure([int mask = RCFG_OPENDAF]) {
