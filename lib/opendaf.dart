@@ -119,12 +119,20 @@ class OpenDAF {
       return m;
     });
 
-  static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2;
+  static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
   
-  Future reconfigure([int mask = RCFG_OPENDAF]) {
+  Future reconfigure([int mask = RCFG_AUTO]) {
     print("Reconfiguring with mask $mask");
-    Future f = ((mask & RCFG_OPENDAF) != 0) ? _http.post(prefix + "management/reconfigure", "") : new Future.value();
-    return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => _http.post(archPrefix + "management/reconfigure", "")) : f;
+    if(mask != RCFG_AUTO) {
+      Future f = ((mask & RCFG_OPENDAF) != 0) ? _http.post(prefix + "management/reconfigure", "") : new Future.value();
+      return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => _http.post(archPrefix + "management/reconfigure", "")) : f;
+    }
+    else {
+      return Future.wait([
+        pid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(prefix + "management/reconfigure", "")),
+        archivePid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(archPrefix + "management/reconfigure", ""))
+      ]);
+    }
   }
   
   int _parsePid(String sPid) {
