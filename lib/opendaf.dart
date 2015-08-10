@@ -118,6 +118,22 @@ class OpenDAF {
         m[names[i]] = l[i];
       return m;
     });
+  
+  Future _eraseHistory(String coType, String name, DateTime from, DateTime to) {
+    if(from == null)
+      from = new DateTime.fromMillisecondsSinceEpoch(0);
+    
+    if(to == null)
+      to = new DateTime.now();
+    
+    return _http.delete(archPrefix + "$coType/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}");    
+  }
+  
+  Future eraseMeasurementHistory(String name, { DateTime from, DateTime to }) =>
+      _eraseHistory("measurements", name, from, to);
+
+  Future eraseCommandHistory(String name, { DateTime from, DateTime to }) =>
+      _eraseHistory("commands", name, from, to);
 
   static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
   
