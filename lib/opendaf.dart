@@ -19,6 +19,8 @@ class OpenDAF {
   final String archPrefix = "/archive/";
   final Http _http;
   
+  static const int MAX_NAMES_IN_REQUEST = 300;
+  
   OpenDAF(this._http);
   
   Future<Measurement> measurement(String name) => _http.get(prefix + "measurements/" + name)
@@ -26,11 +28,18 @@ class OpenDAF {
   Future<VTQ> vtq(String measurementName) => measurement(measurementName).then((Measurement _) => _.vtq);
   Future<dynamic> value(String measurementName) => vtq(measurementName).then((VTQ _) => _.value);
   
-  Future<Map<String, Measurement>> measurements(Iterable<String> names) => _http.get(prefix + "measurements/?names=" + names.join(","))
+  Future<Map<String, Measurement>> measurements(Iterable<String> names) => 
+      ((names.length < MAX_NAMES_IN_REQUEST) ? 
+        _http.get(prefix + "measurements/?names=" + names.join(",")) :
+        _http.get(prefix + "measurements/"))
       .then((HttpResponse _) {
         Map<String, Measurement> m = new Map<String, Measurement>();
         Map<String, dynamic> rawM = _.data;
-        rawM.forEach((String name, dynamic json) { m[name] = new Measurement.fromJson(json); });
+        names.forEach((name) {
+          Map<String, dynamic> json = rawM[name];
+          if(json != null)
+            m[name] = new Measurement.fromJson(json);
+        });
         return m;
       });
   Future<Map<String, VTQ>> vtqs(Iterable<String> names) => measurements(names)
