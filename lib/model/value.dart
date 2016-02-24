@@ -43,7 +43,11 @@ class Value {
           return int.parse(value);
         case Datatype.DT_FLOAT:
         case Datatype.DT_DOUBLE:
-          return double.parse(value);
+          if (value.toLowerCase().compareTo("nan") == 0) {
+            return double.NAN;
+          } else {
+            return double.parse(value);
+          }
         case Datatype.DT_STRING:
           return value;
         default:
