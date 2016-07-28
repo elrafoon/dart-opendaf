@@ -12,6 +12,7 @@ part 'model/vtq.dart';
 part 'model/communication_object.dart';
 part 'model/measurement.dart';
 part 'model/command.dart';
+part 'model/field.dart';
 
 @Injectable()
 class OpenDAF {
@@ -28,10 +29,20 @@ class OpenDAF {
   Future<VTQ> vtq(String measurementName) => measurement(measurementName).then((Measurement _) => _.vtq);
   Future<dynamic> value(String measurementName) => vtq(measurementName).then((VTQ _) => _.value);
   
-  Future<Map<String, Measurement>> measurements(Iterable<String> names) => 
-      ((names.length < MAX_NAMES_IN_REQUEST) ? 
-        _http.get(prefix + "measurements/?names=" + names.join(",")) :
-        _http.get(prefix + "measurements/"))
+  Future<Map<String, Measurement>> measurements(Iterable<String> names, [Iterable<String> fields = null]) {
+    String optNames, optFields;
+    
+    if(names.length < MAX_NAMES_IN_REQUEST)
+      optNames = "names=" + names.join(",");
+    
+    if(fields != null)
+      optFields = "fields=" + fields.join(",");
+
+    final Iterable<String> opts = [optNames, optFields].where((_) => _ != null);
+    final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";
+    
+    return
+      _http.get(prefix + "measurements/" + opt)
       .then((HttpResponse _) {
         Map<String, Measurement> m = new Map<String, Measurement>();
         Map<String, dynamic> rawM = _.data;
@@ -42,12 +53,15 @@ class OpenDAF {
         });
         return m;
       });
-  Future<Map<String, VTQ>> vtqs(Iterable<String> names) => measurements(names)
+  }
+
+  Future<Map<String, VTQ>> vtqs(Iterable<String> names) => measurements(names, [Field.VTQ])
       .then((Map<String, Measurement> _) {
         Map<String, VTQ> m = new Map<String, VTQ>();
         _.forEach((String name, Measurement mes) { m[name] = mes.vtq; });
         return m;
       });
+
   Future<Map<String, dynamic>> values(Iterable<String> names) => vtqs(names)
       .then((Map<String, VTQ> _) {
         Map<String, dynamic> m = new Map<String, dynamic>();
@@ -60,25 +74,42 @@ class OpenDAF {
   Future<VT> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
   Future<dynamic> commandValue(String commandName) => vtq(commandName).then((VTQ _) => _.value);
   
-  Future<Map<String, Command>> commands(Iterable<String> names) => _http.get(prefix + "commands/?names=" + names.join(","))
+  Future<Map<String, Command>> commands(Iterable<String> names, [Iterable<String> fields = null]) {
+    String optNames, optFields;
+    
+    if(names.length < MAX_NAMES_IN_REQUEST)
+      optNames = "names=" + names.join(",");
+    
+    if(fields != null)
+      optFields = "fields=" + fields.join(",");
+
+    final Iterable<String> opts = [optNames, optFields].where((_) => _ != null);
+    final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";
+    
+    return
+      _http.get(prefix + "commands/" + opt)
       .then((HttpResponse _) {
         Map<String, Command> m = new Map<String, Command>();
         Map<String, dynamic> rawM = _.data;
         rawM.forEach((String name, dynamic json) { m[name] = new Command.fromJson(json); });
         return m;
       });
-  Future<Map<String, VT>> commandVTs(Iterable<String> names) => commands(names)
+  }
+  
+  Future<Map<String, VT>> commandVTs(Iterable<String> names) => commands(names, [Field.VT])
       .then((Map<String, Command> _) {
         Map<String, VT> m = new Map<String, VT>();
         _.forEach((String name, Command cmd) { m[name] = cmd.vt; });
         return m;
       });
+
   Future<Map<String, dynamic>> commandValues(Iterable<String> names) => commandVTs(names)
       .then((Map<String, VTQ> _) {
         Map<String, dynamic> m = new Map<String, dynamic>();
         _.forEach((String name, VT vt) { m[name] = vt.value; });
         return m;
       });
+
   Future writeCommand(String command, String valueWithPrefix) => 
       _http.put(prefix + "commands/" + command, null, params : {"value" : valueWithPrefix});
   
