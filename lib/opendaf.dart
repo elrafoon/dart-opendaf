@@ -20,7 +20,7 @@ class OpenDAF {
   final String archPrefix = "/archive/";
   final Http _http;
   
-  static const int MAX_NAMES_IN_REQUEST = 1000;
+  static const int MAX_NAMES_IN_REQUEST = 2000;
   
   OpenDAF(this._http);
   
