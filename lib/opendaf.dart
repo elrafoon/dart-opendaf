@@ -16,8 +16,8 @@ part 'model/field.dart';
 
 @Injectable()
 class OpenDAF {
-  final String prefix = "/";
-  final String archPrefix = "/archive/";
+  final String prefix = "/opendaf/";
+  final String archPrefix = "/opendaf/archive/";
   final Http _http;
   
   static const int MAX_NAMES_IN_REQUEST = 2000;
