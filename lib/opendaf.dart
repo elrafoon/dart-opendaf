@@ -13,6 +13,7 @@ part 'model/communication_object.dart';
 part 'model/measurement.dart';
 part 'model/command.dart';
 part 'model/field.dart';
+part 'model/function_module.dart';
 
 @Injectable()
 class OpenDAF {
@@ -112,6 +113,23 @@ class OpenDAF {
 
   Future writeCommand(String command, String valueWithPrefix) => 
       _http.put(prefix + "commands/" + command, null, params : {"value" : valueWithPrefix});
+
+  Future<FunctionModule> functionModule(String name) =>
+      _http.get("$prefix/function-modules/$name")
+      .then((HttpResponse _) => new FunctionModule.fromJson(_.data));
+        
+  Future<Map<String, FunctionModule>> functionModules(Iterable<String> names) =>
+      _http.get("$prefix/function-modules/")
+      .then((HttpResponse _) {
+        Map<String, FunctionModule> fm = new Map<String, FunctionModule>();
+        Map<String, dynamic> rawFMs = _.data;
+        names.forEach((name) {
+          Map<String, dynamic> json = rawFMs[name];
+          if(json != null)
+            fm[name] = new FunctionModule.fromJson(json);
+        });
+        return fm;
+      });
   
   Future<List<VTQ>> measurementHistory(String name, DateTime from, DateTime to, {Duration resample}) {
     Map<String, dynamic> params = new Map<String, dynamic>();
