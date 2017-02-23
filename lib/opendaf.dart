@@ -14,6 +14,7 @@ part 'model/measurement.dart';
 part 'model/command.dart';
 part 'model/field.dart';
 part 'model/function_module.dart';
+part 'model/alarm.dart';
 
 @Injectable()
 class OpenDAF {
@@ -130,6 +131,42 @@ class OpenDAF {
         });
         return fm;
       });
+  
+  Future<Alarm> alarm(String name) =>
+      _http.get("$prefix/alarms/$name")
+      .then((HttpResponse _) => new Alarm.fromJson(_.data));
+        
+  Future<Map<String, Alarm>> alarms(Iterable<String> names, [Iterable<String> fields = null]) {
+    String optNames, optFields;
+    
+    if(names.length < MAX_NAMES_IN_REQUEST)
+      optNames = "names=" + names.join(",");
+    
+    if(fields != null)
+      optFields = "fields=" + fields.join(",");
+
+    final Iterable<String> opts = [optNames, optFields].where((_) => _ != null);
+    final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";    
+
+    return _http.get("$prefix/alarms/$opt")
+    .then((HttpResponse _) {
+      Map<String, Alarm> alm = new Map<String, Alarm>();
+      Map<String, dynamic> rawAlms = _.data;
+      names.forEach((name) {
+        Map<String, dynamic> json = rawAlms[name];
+        if(json != null)
+          alm[name] = new Alarm.fromJson(json);
+      });
+      return alm;
+    });
+  }
+  
+  Future _alarmOp(String name, String op) =>
+    _http.post("$prefix/alarms/$name/$op", null);
+  
+  Future alarmAcknowledge(String name) => _alarmOp(name, "acknowledge");
+  Future alarmActivate(String name) => _alarmOp(name, "activate");
+  Future alarmDeactivate(String name) => _alarmOp(name, "deactivate");
   
   Future<List<VTQ>> measurementHistory(String name, DateTime from, DateTime to, {Duration resample}) {
     Map<String, dynamic> params = new Map<String, dynamic>();
