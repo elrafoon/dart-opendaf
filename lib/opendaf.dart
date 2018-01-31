@@ -168,21 +168,44 @@ class OpenDAF {
   Future alarmActivate(String name) => _alarmOp(name, "activate");
   Future alarmDeactivate(String name) => _alarmOp(name, "deactivate");
   
-  Future<List<VTQ>> measurementHistory(String name, DateTime from, DateTime to, {Duration resample}) {
+  /*
+   * archive access
+   */
+  
+  /*
+   * backend
+   */
+  String _fmtQueryTime(dynamic t) {
+    if(t is DateTime)
+      return "${t.millisecondsSinceEpoch ~/ 1000}";
+    else if(t is num && t <= 0)
+      return "${t.toStringAsFixed(6)}";
+    else
+      throw new ArgumentError();
+  }
+
+  String _fmtQueryTimeRange(dynamic from, dynamic to) {
+    return "/${_fmtQueryTime(from)}/${_fmtQueryTime(to)}";
+  }
+  
+  Future<List<VTQ>> _history(String coType, String name, dynamic from, dynamic to, Duration resample, bool warpHead) {
     Map<String, dynamic> params = new Map<String, dynamic>();
     if(resample != null)
       params["resample"] = resample.inMilliseconds.toDouble() / 1000.0;
     
-    return _http.get(archPrefix + "measurements/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}", params: params)
+    if(warpHead == false)
+      params["warp_head"] = 0;
+    
+    return _http.get(archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to), params: params)
     .then((HttpResponse _) {
       List rawSamples = _.data[name];
       return rawSamples.map((_) => new VTQ.fromJson(_)).toList();
     });
   }
   
-  Future<Map<String, List<VTQ>>> measurementsHistory(List<String> names, DateTime from, DateTime to, {Duration resample}) =>
+  Future<Map<String, List<VTQ>>> _histories(String coType, List<String> names, dynamic from, dynamic to, Duration resample, bool warpHead) =>
     Future.wait(
-      names.map((_) => measurementHistory(_, from, to, resample: resample))
+      names.map((_) => _history(coType, _, from, to, resample, warpHead))
     )
     .then((List<List<VTQ>> l) {
       Map<String, List<VTQ>> m = new Map<String, List<VTQ>>();
@@ -190,44 +213,45 @@ class OpenDAF {
         m[names[i]] = l[i];
       return m;
     });
+
+  /* frontends */
   
-  Future<List<VT>> commandHistory(String name, DateTime from, DateTime to, {Duration resample}) {
-    Map<String, dynamic> params = new Map<String, dynamic>();
-    if(resample != null)
-      params["resample"] = resample.inMilliseconds.toDouble() / 1000.0;
-    
-    return _http.get(archPrefix + "commands/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}", params: params)
-    .then((HttpResponse _) {
-      List rawSamples = _.data[name];
-      return rawSamples.map((_) => new VT.fromJson(_)).toList();
-    });
-  }
+  // expects negative offset relative to server's current time or absolute DateTime
+  Future<List<VTQ>> measurementHistory(String name, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
+      _history("measurements", name, from, to, resample, warpHead);
   
-  Future<Map<String, List<VT>>> commandsHistory(List<String> names, DateTime from, DateTime to, {Duration resample}) =>
-    Future.wait(
-      names.map((_) => commandHistory(_, from, to, resample: resample))
-    )
-    .then((List<List<VT>> l) {
-      Map<String, List<VT>> m = new Map<String, List<VT>>();
-      for(int i = 0; i < names.length; ++i)
-        m[names[i]] = l[i];
-      return m;
-    });
-  
-  Future _eraseHistory(String coType, String name, DateTime from, DateTime to) {
+  // expects negative offset relative to server's current time or absolute DateTime
+  Future<Map<String, List<VTQ>>> measurementsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
+      _histories("measurements", names, from, to, resample, warpHead);
+   
+  // expects negative offset relative to server's current time or absolute DateTime
+  Future<List<VT>> commandHistory(String name, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
+      _history("commands", name, from, to, resample, warpHead);
+
+  // expects negative offset relative to server's current time or absolute DateTime
+  Future<Map<String, List<VT>>> commandsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
+      _histories("commands", names, from, to, resample, warpHead);
+
+  Future _eraseHistory(String coType, String name, dynamic from, dynamic to) {
     if(from == null)
       from = new DateTime.fromMillisecondsSinceEpoch(0);
     
     if(to == null)
       to = new DateTime.now();
     
-    return _http.delete(archPrefix + "$coType/$name/${from.millisecondsSinceEpoch ~/ 1000}/${to.millisecondsSinceEpoch ~/ 1000}");    
+    return _http.delete(archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to));    
   }
   
   Future eraseMeasurementHistory(String name, { DateTime from, DateTime to }) =>
       _eraseHistory("measurements", name, from, to);
 
   Future eraseCommandHistory(String name, { DateTime from, DateTime to }) =>
+      _eraseHistory("commands", name, from, to);
+
+  Future eraseMeasurementHistoryRelative(String name, { dynamic from, dynamic to }) =>
+      _eraseHistory("measurements", name, from, to);
+
+  Future eraseCommandHistoryRelative(String name, { dynamic from, dynamic to }) =>
       _eraseHistory("commands", name, from, to);
 
   static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
