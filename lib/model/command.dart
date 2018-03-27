@@ -1,7 +1,7 @@
 part of opendaf;
 
 class Command extends CommunicationObject {
-  final VT vt;
+  VT vt;
   
   Command(name, address, datatype, rawDatatype, euRange, rawRange, this.vt) :
     super(name, address, datatype, rawDatatype, euRange, rawRange);

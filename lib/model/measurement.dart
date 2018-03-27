@@ -1,7 +1,7 @@
 part of opendaf;
 
 class Measurement extends CommunicationObject {
-  final VTQ vtq;
+  VTQ vtq;
   
   Measurement(name, address, datatype, rawDatatype, euRange, rawRange, this.vtq) :
     super(name, address, datatype, rawDatatype, euRange, rawRange);
