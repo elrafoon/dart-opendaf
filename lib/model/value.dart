@@ -45,6 +45,10 @@ class Value {
         case Datatype.DT_DOUBLE:
           if (value.toLowerCase().compareTo("nan") == 0) {
             return double.NAN;
+          } else if (value.toLowerCase().compareTo("inf") == 0) {
+			return double.INFINITY;
+          } else if (value.toLowerCase().compareTo("-inf") == 0) {
+			return double.NEGATIVE_INFINITY;
           } else {
             return double.parse(value);
           }
