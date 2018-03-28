@@ -110,7 +110,7 @@ class OpenDAF {
       });
 
   Future<Map<String, dynamic>> commandValues(Iterable<String> names) => commandVTs(names)
-      .then((Map<String, VTQ> _) {
+      .then((Map<String, VT> _) {
         Map<String, dynamic> m = new Map<String, dynamic>();
         _.forEach((String name, VT vt) { m[name] = vt.value; });
         return m;

@@ -46,12 +46,13 @@ class Value {
           if (value.toLowerCase().compareTo("nan") == 0) {
             return double.NAN;
           } else if (value.toLowerCase().compareTo("inf") == 0) {
-			return double.INFINITY;
+            return double.INFINITY;
           } else if (value.toLowerCase().compareTo("-inf") == 0) {
-			return double.NEGATIVE_INFINITY;
+            return double.NEGATIVE_INFINITY;
           } else {
             return double.parse(value);
           }
+          break;
         case Datatype.DT_STRING:
           return value;
         default:
