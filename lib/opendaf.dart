@@ -1,7 +1,9 @@
 library opendaf;
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:angular/angular.dart';
+import 'package:http/http.dart' as http;
 
 part 'model/datatype.dart';
 part 'model/quality.dart';
@@ -20,14 +22,16 @@ part 'model/alarm.dart';
 class OpenDAF {
   final String prefix = "/opendaf/";
   final String archPrefix = "/opendaf/archive/";
-  final Http _http;
+  final http.Client _http;
   
   static const int MAX_NAMES_IN_REQUEST = 2000;
   
   OpenDAF(this._http);
   
+  static dynamic _json(http.Response rsp) => JSON.decode(rsp.body);
+  
   Future<Measurement> measurement(String name) => _http.get(prefix + "measurements/" + name)
-      .then((HttpResponse _) => new Measurement.fromJson(_.data));
+      .then((http.Response _) => new Measurement.fromJson(_json(_)));
   Future<VTQ> vtq(String measurementName) => measurement(measurementName).then((Measurement _) => _.vtq);
   Future<dynamic> value(String measurementName) => vtq(measurementName).then((VTQ _) => _.value);
   
@@ -45,9 +49,9 @@ class OpenDAF {
     
     return
       _http.get(prefix + "measurements/" + opt)
-      .then((HttpResponse _) {
+      .then((http.Response _) {
         Map<String, Measurement> m = new Map<String, Measurement>();
-        Map<String, dynamic> rawM = _.data;
+        Map<String, dynamic> rawM = _json(_);
         names.forEach((name) {
           Map<String, dynamic> json = rawM[name];
           if(json != null)
@@ -72,7 +76,7 @@ class OpenDAF {
       });
   
   Future<Command> command(String name) => _http.get(prefix + "commands/" + name)
-      .then((HttpResponse _) => new Command.fromJson(_.data));
+      .then((http.Response _) => new Command.fromJson(_json(_)));
   Future<VT> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
   Future<dynamic> commandValue(String commandName) => vtq(commandName).then((VTQ _) => _.value);
   
@@ -90,9 +94,9 @@ class OpenDAF {
     
     return
       _http.get(prefix + "commands/" + opt)
-      .then((HttpResponse _) {
+      .then((http.Response _) {
         Map<String, Command> m = new Map<String, Command>();
-        Map<String, dynamic> rawM = _.data;
+        Map<String, dynamic> rawM = _json(_);
         rawM.forEach((String name, dynamic json) { m[name] = new Command.fromJson(json); });
         return m;
       });
@@ -113,17 +117,17 @@ class OpenDAF {
       });
 
   Future writeCommand(String command, String valueWithPrefix) => 
-      _http.put(prefix + "commands/" + command, null, params : {"value" : valueWithPrefix});
+      _http.put(new Uri(path: prefix + "commands/" + command, queryParameters : {"value" : valueWithPrefix}));
 
   Future<FunctionModule> functionModule(String name) =>
       _http.get("$prefix/function-modules/$name")
-      .then((HttpResponse _) => new FunctionModule.fromJson(_.data));
+      .then((http.Response _) => new FunctionModule.fromJson(_json(_)));
         
   Future<Map<String, FunctionModule>> functionModules(Iterable<String> names) =>
       _http.get("$prefix/function-modules/")
-      .then((HttpResponse _) {
+      .then((http.Response _) {
         Map<String, FunctionModule> fm = new Map<String, FunctionModule>();
-        Map<String, dynamic> rawFMs = _.data;
+        Map<String, dynamic> rawFMs = _json(_);
         names.forEach((name) {
           Map<String, dynamic> json = rawFMs[name];
           if(json != null)
@@ -134,7 +138,7 @@ class OpenDAF {
   
   Future<Alarm> alarm(String name) =>
       _http.get("$prefix/alarms/$name")
-      .then((HttpResponse _) => new Alarm.fromJson(_.data));
+      .then((http.Response _) => new Alarm.fromJson(_json(_)));
         
   Future<Map<String, Alarm>> alarms(Iterable<String> names, [Iterable<String> fields = null]) {
     String optNames, optFields;
@@ -149,9 +153,9 @@ class OpenDAF {
     final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";    
 
     return _http.get("$prefix/alarms/$opt")
-    .then((HttpResponse _) {
+    .then((http.Response _) {
       Map<String, Alarm> alm = new Map<String, Alarm>();
-      Map<String, dynamic> rawAlms = _.data;
+      Map<String, dynamic> rawAlms = _json(_);
       names.forEach((name) {
         Map<String, dynamic> json = rawAlms[name];
         if(json != null)
@@ -162,7 +166,7 @@ class OpenDAF {
   }
   
   Future _alarmOp(String name, String op) =>
-    _http.post("$prefix/alarms/$name/$op", null);
+    _http.post("$prefix/alarms/$name/$op");
   
   Future alarmAcknowledge(String name) => _alarmOp(name, "acknowledge");
   Future alarmActivate(String name) => _alarmOp(name, "activate");
@@ -196,9 +200,9 @@ class OpenDAF {
     if(warpHead == false)
       params["warp_head"] = 0;
     
-    return _http.get(archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to), params: params)
-    .then((HttpResponse _) {
-      List rawSamples = _.data[name];
+    return _http.get(new Uri(path: archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to), queryParameters: params))
+    .then((http.Response _) {
+      List rawSamples = _json(_)[name];
       return rawSamples.map((_) => new VTQ.fromJson(_)).toList();
     });
   }
@@ -259,13 +263,13 @@ class OpenDAF {
   Future reconfigure([int mask = RCFG_AUTO]) {
     print("Reconfiguring with mask $mask");
     if(mask != RCFG_AUTO) {
-      Future f = ((mask & RCFG_OPENDAF) != 0) ? _http.post(prefix + "management/reconfigure", "") : new Future.value();
-      return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => _http.post(archPrefix + "management/reconfigure", "")) : f;
+      Future f = ((mask & RCFG_OPENDAF) != 0) ? _http.post(prefix + "management/reconfigure") : new Future.value();
+      return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => _http.post(archPrefix + "management/reconfigure")) : f;
     }
     else {
       return Future.wait([
-        pid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(prefix + "management/reconfigure", "")),
-        archivePid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(archPrefix + "management/reconfigure", ""))
+        pid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(prefix + "management/reconfigure")),
+        archivePid.catchError((e) => null).then((_) => (_ == null) ? null : _http.post(archPrefix + "management/reconfigure"))
       ]);
     }
   }
@@ -280,8 +284,8 @@ class OpenDAF {
   }
   
   Future<int> get pid =>
-      _http.get(prefix + "management/pid").then((HttpResponse rsp) => _parsePid(rsp.data.toString()));
+      _http.get(prefix + "management/pid").then((http.Response rsp) => _parsePid(rsp.body));
 
   Future<int> get archivePid =>
-      _http.get(archPrefix + "management/pid").then((HttpResponse rsp) => _parsePid(rsp.data.toString()));
+      _http.get(archPrefix + "management/pid").then((http.Response rsp) => _parsePid(rsp.body));
 }
