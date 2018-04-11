@@ -203,7 +203,14 @@ class OpenDAF {
     return _http.get(new Uri(path: archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to), queryParameters: params))
     .then((http.Response _) {
       List rawSamples = _json(_)[name];
-      return rawSamples.map((_) => new VTQ.fromJson(_)).toList();
+      switch(coType) {
+        case "measurements":
+          return rawSamples.map((_) => new VTQ.fromJson(_)).toList();
+        case "commands":
+          return rawSamples.map((_) => new VT.fromJson(_)).toList();
+        default:
+          return new ArgumentError("Unknown communication object type $coType");
+      }
     });
   }
   
