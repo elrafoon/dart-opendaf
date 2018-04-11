@@ -195,10 +195,10 @@ class OpenDAF {
   Future<List<VTQ>> _history(String coType, String name, dynamic from, dynamic to, Duration resample, bool warpHead) {
     Map<String, dynamic> params = new Map<String, dynamic>();
     if(resample != null)
-      params["resample"] = resample.inMilliseconds.toDouble() / 1000.0;
+      params["resample"] = (resample.inMilliseconds.toDouble() / 1000.0).toString();
     
     if(warpHead == false)
-      params["warp_head"] = 0;
+      params["warp_head"] = "0";
     
     return _http.get(new Uri(path: archPrefix + "$coType/$name" + _fmtQueryTimeRange(from, to), queryParameters: params))
     .then((http.Response _) {
