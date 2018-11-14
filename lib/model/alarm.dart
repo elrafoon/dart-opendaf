@@ -8,10 +8,11 @@ class Alarm {
   final DateTime timestamp;
   final String authority;
   final EAlarmState state;
+  final String description;
   
-  Alarm(this.name, this.severity, this.timestamp, this.authority, this.state);
+  Alarm(this.name, this.severity, this.timestamp, this.authority, this.state, this.description);
   Alarm.fromJson(Map<String, dynamic> json) : 
-    this(json["name"], json["severity"], VT.parseTime(json["timestamp"]), json["authority"], decodeState(json["state"]));
+    this(json["name"], json["severity"], VT.parseTime(json["timestamp"]), json["authority"], decodeState(json["state"]), json["description"]);
   
   static EAlarmState decodeState(String stateName) {
     switch(stateName) {
