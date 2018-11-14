@@ -140,10 +140,10 @@ class OpenDAF {
       _http.get("$prefix/alarms/$name")
       .then((http.Response _) => new Alarm.fromJson(_json(_)));
         
-  Future<Map<String, Alarm>> alarms(Iterable<String> names, [Iterable<String> fields = null]) {
+  Future<Map<String, Alarm>> alarms([Iterable<String> names = null, Iterable<String> fields = null]) {
     String optNames, optFields;
     
-    if(names.length < MAX_NAMES_IN_REQUEST)
+    if(names != null && names.length < MAX_NAMES_IN_REQUEST)
       optNames = "names=" + names.join(",");
     
     if(fields != null)
@@ -156,6 +156,10 @@ class OpenDAF {
     .then((http.Response _) {
       Map<String, Alarm> alm = new Map<String, Alarm>();
       Map<String, dynamic> rawAlms = _json(_);
+
+      if(names == null)
+        names = rawAlms.keys;
+
       names.forEach((name) {
         Map<String, dynamic> json = rawAlms[name];
         if(json != null)
