@@ -218,16 +218,26 @@ class OpenDAF {
     });
   }
   
-  Future<Map<String, List>> _histories(String coType, List<String> names, dynamic from, dynamic to, Duration resample, bool warpHead) =>
-    Future.wait(
-      names.map((_) => _history(coType, _, from, to, resample, warpHead))
-    )
-    .then((List<List> l) {
+  Future<Map<String, List>> _histories(String coType, List<String> names, dynamic from, dynamic to, Duration resample, bool warpHead, bool parallel) async {
+    Future fut;
+    
+    if(parallel)
+      fut = Future.wait(names.map((_) => _history(coType, _, from, to, resample, warpHead)));
+    else {
+      List<List> l = new List<List>();
+      for(int i = 0; i < names.length; ++i)
+        l.add(await _history(coType, names[i], from, to, resample, warpHead));
+      
+      fut = new Future.value(l);
+    }
+
+    return fut.then((List<List> l) {
       Map<String, List> m = new Map<String, List>();
       for(int i = 0; i < names.length; ++i)
         m[names[i]] = l[i];
       return m;
     });
+  }
 
   /* frontends */
   
@@ -236,16 +246,16 @@ class OpenDAF {
       _history("measurements", name, from, to, resample, warpHead) as Future<List<VTQ>>;
   
   // expects negative offset relative to server's current time or absolute DateTime
-  Future<Map<String, List<VTQ>>> measurementsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
-      _histories("measurements", names, from, to, resample, warpHead) as Future<Map<String, List<VTQ>>>;
+  Future<Map<String, List<VTQ>>> measurementsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true, bool parallel: false}) =>
+      _histories("measurements", names, from, to, resample, warpHead, parallel) as Future<Map<String, List<VTQ>>>;
    
   // expects negative offset relative to server's current time or absolute DateTime
   Future<List<VT>> commandHistory(String name, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
       _history("commands", name, from, to, resample, warpHead) as Future<List<VT>>;
 
   // expects negative offset relative to server's current time or absolute DateTime
-  Future<Map<String, List<VT>>> commandsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true}) =>
-      _histories("commands", names, from, to, resample, warpHead) as Future<Map<String, List<VT>>>;
+  Future<Map<String, List<VT>>> commandsHistory(List<String> names, dynamic from, dynamic to, {Duration resample, bool warpHead: true, bool parallel: false}) =>
+      _histories("commands", names, from, to, resample, warpHead, parallel) as Future<Map<String, List<VT>>>;
 
   Future _eraseHistory(String coType, String name, dynamic from, dynamic to) {
     if(from == null)
