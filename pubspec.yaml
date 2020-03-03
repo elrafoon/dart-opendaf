@@ -1,7 +1,7 @@
 name: opendaf
-version: 2.0.7
+version: 2.0.8
 dependencies:
   angular: any
-  http: any
+  http: '>=0.10.0 <0.11.0'
 transformers:
 - angular
