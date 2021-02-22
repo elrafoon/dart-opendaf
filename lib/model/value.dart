@@ -12,13 +12,13 @@ class Value {
       }
     }
   }
-  
+
   static int getDataType(String valueWithPrefix) => Datatype.fromPrefix(getPrefix(valueWithPrefix));
 
   static dynamic parseValueWithPrefix(String valueWithPrefix) {
     if(valueWithPrefix == null)
       return null;
-    
+
     var prefix = getPrefix(valueWithPrefix);
     if(prefix == null)
       return null;
@@ -46,12 +46,13 @@ class Value {
           if (value.toLowerCase().compareTo("nan") == 0) {
             return double.NAN;
           } else if (value.toLowerCase().compareTo("inf") == 0) {
-			return double.INFINITY;
+			      return double.INFINITY;
           } else if (value.toLowerCase().compareTo("-inf") == 0) {
-			return double.NEGATIVE_INFINITY;
+			      return double.NEGATIVE_INFINITY;
           } else {
             return double.parse(value);
           }
+          break;
         case Datatype.DT_STRING:
           return value;
         default:
@@ -59,10 +60,10 @@ class Value {
       }
     }
   }
-  
+
   static String formatAs(dynamic value, int datatype) {
     String prefix = Datatype.toPrefix(datatype);
-    
+
     switch(datatype) {
       case Datatype.DT_BINARY:
         bool b = value;
