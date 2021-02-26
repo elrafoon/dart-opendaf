@@ -1,5 +1,5 @@
 name: opendaf
-version: 2.0.9
+version: 2.1.0
 dependencies:
   angular: any
   convert: ^2.0.1
