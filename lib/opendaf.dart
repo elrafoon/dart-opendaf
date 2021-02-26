@@ -2,6 +2,7 @@ library opendaf;
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:convert/convert.dart';
 import 'package:angular/angular.dart';
 import 'package:http/http.dart' as http;
 
