@@ -113,8 +113,10 @@ class OpenDAFWS {
 
     _ws.onClose.listen((e) {
       log('WebSocket disconnected from ' + _url);
-      _keepAliveTimer.cancel();
-      _keepAliveTimer = null;
+      if (_keepAliveTimer != null){
+        _keepAliveTimer.cancel();
+        _keepAliveTimer = null;
+      }
       connected = false;
       RECONNECT_TIMEOUT = RECONNECT_TIMEOUT < 10 ? RECONNECT_TIMEOUT++ : 60;
       return futConnection = new Future.delayed(new Duration(seconds: RECONNECT_TIMEOUT), () => reconnect());
