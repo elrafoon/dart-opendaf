@@ -6,6 +6,7 @@ class Response extends StreamEvent{}
 class AlarmStateChangeNotification extends StreamEvent{ Set<Alarm> alarms; }
 class MeasurementUpdateNotification extends StreamEvent{ Set<Measurement> measurements; }
 
+
 @Injectable()
 class OpenDAFWS {
   /// Constants
@@ -112,18 +113,20 @@ class OpenDAFWS {
 
     _ws.onClose.listen((e) {
       log('WebSocket disconnected from ' + _url);
+      _keepAliveTimer.cancel();
+      _keepAliveTimer = null;
       connected = false;
       RECONNECT_TIMEOUT = RECONNECT_TIMEOUT < 10 ? RECONNECT_TIMEOUT++ : 60;
       return futConnection = new Future.delayed(new Duration(seconds: RECONNECT_TIMEOUT), () => reconnect());
     });
   }
 
-  /// Default web-socket request function
+  /// A web-socket request function
   ///
-  /// Function adds generated [id] parameter to the [message] and sends the [message] to websocket.
-  /// With [id] is registered new [Completer], which holds request status.
+  /// Every [message] receives generated [id] before sending to WS Server.
+  /// [message] is paired with new [Completer] and sent to WS Server.
   ///
-  /// Returns [Completer.future]
+  /// _Returns_ [Completer.future]. Total 3 sending attempts with 1s delay are performed before function returns an [Future.error]
   Future<dynamic> _ws_request(Map<String, dynamic> message, [int retry = 0]){
     if (_ws != null && _ws.readyState == html.WebSocket.OPEN) {
       message["id"] = id_counter++;
@@ -202,6 +205,9 @@ class OpenDAFWS {
 
   /* Public functions */
 
+  /// [WatchMeasurements] request handler.
+  ///
+  /// To unwatch some measurements simply send new [names] Set and let function handle all by itself.
   ///
   /// [objectReference] = usually [this]
   Future<dynamic> watchMeasurements(dynamic objectReference, Set<String> names){
@@ -226,5 +232,24 @@ class OpenDAFWS {
   Future<dynamic> unwatchAllMeasurements(dynamic objectReference){
     _measurementsByObject[objectReference] = new Set<String>();
     return _mergeMeasurementSet();
+  }
+
+  Future<dynamic> writeCommand (String commandName, String newValueWithPrefix)
+  => writeCommands({commandName: newValueWithPrefix});
+
+  Future<dynamic> writeCommands(Map<String, dynamic> commands){
+    Map<String, dynamic> properties = new Map<String, dynamic>();
+    properties["request"] = WS_REQUEST_WRITE_COMMANDS;
+
+    List<Map<String, dynamic>> items = new List<Map<String, dynamic>>();
+    commands.forEach((key, value) {
+      Map<String, dynamic> item = new Map<String, dynamic>();
+      item["name"] = key;
+      item["value"] = value;
+      items.add(item);
+    });
+
+    properties["writes"] = items;
+    return _ws_request(properties);
   }
 }
