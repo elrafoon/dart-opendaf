@@ -157,9 +157,9 @@ class OpenDAFWS {
       _completers.remove(id);
 
       if (!result)
-        log("Response (" + id.toString() + ") competerError: " + reason);
+        log("Response ($id) completerError: $reason");
       else
-        log("Response (" + id.toString() + ") completed.");
+        log("Response ($id) completed.");
     }
   }
 
