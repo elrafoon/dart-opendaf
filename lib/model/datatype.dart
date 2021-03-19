@@ -25,6 +25,24 @@ class Datatype {
       default:  return null;
     }
   }
+
+  static String fromDescription(String description) {
+    if(description == null)
+      return null;
+
+    switch(description) {
+      case 'binary':      return 'b';
+      case 'quaternary':  return 'q';
+      case 'integer':     return 'i';
+      case 'long':        return 'l';
+      case 'float':       return 'f';
+      case 'double':      return 'd';
+      case 'string':      return 's';
+      default:            return null;
+    }
+  }
+  
+  static List<String> get descriptions => new List.from(["(empty)", "binary", "quaternary", "integer", "long", "float", "double", "string"]);
   
   static String toPrefix(int datatype) {
     switch(datatype) {
