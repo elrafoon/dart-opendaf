@@ -217,15 +217,17 @@ class OpenDAFWS {
      if(m == null )
        throw new StateError("WatchMeasurements accepts only non-null names");
     });
-
+    
+    Set<String> watchedMeasurements = _measurementsByObject[objectReference];
+    if(watchedMeasurements == null) {
+      watchedMeasurements = new Set<String>();
+      _measurementsByObject[objectReference] = watchedMeasurements;
+    } else {
+      watchedMeasurements.clear();
+    }
+    
     names.forEach((m) {
-      Set<String> watchedMeasurements = _measurementsByObject[objectReference];
-      if(watchedMeasurements == null) {
-        watchedMeasurements = new Set<String>();
-        _measurementsByObject[objectReference] = watchedMeasurements;
-      }
-
-      watchedMeasurements.add(m);
+        watchedMeasurements.add(m);
     });
 
     return _mergeMeasurementSet();
