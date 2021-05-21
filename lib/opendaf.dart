@@ -6,6 +6,7 @@ import 'package:convert/convert.dart';
 import 'package:angular/angular.dart';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
+import 'package:intl/intl.dart';
 
 part 'model/datatype.dart';
 part 'model/quality.dart';

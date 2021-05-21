@@ -2,7 +2,7 @@ part of opendaf;
 
 class Quality {
   static const int STATUS_MASK = 0xC0, SUBSTATUS_MASK = 0x3C, LIMITS_MASK = 0x03;
-  static const int STATUS_SHIFT = 6, SUBSTATUS_SHIFT = 2, LIMITS_SHIFT = 0;
+  static const int VENDOR_FLAGS_SHIFT = 8, STATUS_SHIFT = 6, SUBSTATUS_SHIFT = 2, LIMITS_SHIFT = 0;
   
   // statuses
   static const int GOOD = 0xC0, UNCERTAIN = 0x40, BAD = 0x00;
@@ -48,6 +48,10 @@ class Quality {
     LIMIT_HIGH : "High-limited",
     LIMIT_CONSTANT : "Constant"
   };
+
+  // vendor flags
+  static const int VF_SIM = 0x80;
+  static int vendorFlags(int q) => (q >> VENDOR_FLAGS_SHIFT);
   
   static int status(int q) => (q & STATUS_MASK);
   static int substatus(int q) => (q & SUBSTATUS_MASK);
@@ -56,6 +60,7 @@ class Quality {
   static bool isGood(int q) => status(q) == GOOD;
   static bool isUncertain(int q) => status(q) == UNCERTAIN;
   static bool isBad(int q) => status(q) == BAD;
+  static bool isSimulated(int q) => (vendorFlags(q) & VF_SIM == VF_SIM);
   
   static String _toHex(int n) => n.toRadixString(16).toUpperCase().padLeft(2, '0');
   
