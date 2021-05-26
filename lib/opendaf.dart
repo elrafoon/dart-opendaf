@@ -80,6 +80,21 @@ class OpenDAF {
         return m;
       });
 
+  Future simulateMeasurement(String measurement, String valueWithPrefix, int quality, {int validFor, int timestamp}) {
+    dynamic query = {"value" : valueWithPrefix, "quality" : quality.toString() };
+    if(timestamp != null)
+      query["timestamp"] = timestamp.toString();
+    else
+      query["valid-for"] = validFor != null && validFor is num ? validFor.toString() : "60";
+
+    return _http.put(new Uri(path: prefix + "measurements/" + measurement, queryParameters : query));
+  }
+
+  Future stopMeasurementSimulation(String measurement) => 
+    _http.delete(new Uri(path: prefix + "measurements/" + measurement));
+  
+     
+
   Future<Command> command(String name) => _http.get(prefix + "commands/" + name)
       .then((http.Response _) => new Command.fromJson(_json(_)));
   Future<VT> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);

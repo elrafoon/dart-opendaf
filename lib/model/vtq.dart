@@ -21,4 +21,6 @@ class VTQ extends VT {
       else
         return "quality-bad";
     }
+
+    bool get isSimulated => Quality.isSimulated(quality);
 }

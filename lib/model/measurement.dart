@@ -21,6 +21,4 @@ class Measurement extends CommunicationObject {
     : vtq.timestamp.toString() 
   );
   static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
-
-  bool get isSimulated => Quality.isSimulated(vtq.quality);
 }
