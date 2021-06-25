@@ -27,6 +27,7 @@ part 'opendaf_ws.dart';
 class OpenDAF {
   final String prefix = "/opendaf/";
   final String archPrefix = "/opendaf/archive/";
+  final String dafmanPrefix = "/dafman/v1";
   final http.Client _http;
 
   static const int MAX_NAMES_IN_REQUEST = 2000;
@@ -156,9 +157,18 @@ class OpenDAF {
         return fm;
       });
 
-  Future<Alarm> alarm(String name) =>
-      _http.get("$prefix/alarms/$name")
-      .then((http.Response _) => new Alarm.fromJson(_json(_)));
+  Future<Alarm> alarm(String name, {bool fetchRuntime = true, bool fetchConfiguration = false}) {
+    return Future.wait([
+      fetchConfiguration ? _http.get("$dafmanPrefix/alarms/$name") : new Future.value(null),
+      fetchRuntime ? _http.get("$prefix/alarms/$name") : new Future.value(null)
+    ]).then((List<http.Response> response) {
+      Alarm alm = new Alarm.fromRuntimeJson(this, _json(response[1]));
+      if(fetchConfiguration){
+        alm.updateConfigurationJson(_json(response[0]));
+      }
+      return alm;
+    });
+  }
 
   Future<Map<String, Alarm>> alarms([Iterable<String> names = null, Iterable<String> fields = null]) {
     String optNames, optFields;
@@ -183,7 +193,7 @@ class OpenDAF {
       names.forEach((name) {
         Map<String, dynamic> json = rawAlms[name];
         if(json != null)
-          alm[name] = new Alarm.fromJson(json);
+          alm[name] = new Alarm.fromRuntimeJson(this, json);
       });
       return alm;
     });

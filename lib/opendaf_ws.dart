@@ -29,6 +29,7 @@ class OpenDAFWS {
 
   /// Variables
   final http.Client _http;
+  final OpenDAF _opendaf;
   static int id_counter = 0;
   static const int MAX_NAMES_IN_REQUEST = 2000;
   final StreamController<StreamEvent> eventController = new StreamController<StreamEvent>.broadcast();
@@ -45,7 +46,7 @@ class OpenDAFWS {
   Set<String> _watchedMeasurements = new Set<String>();
 
 
-  OpenDAFWS(this._http) {
+  OpenDAFWS(this._http, this._opendaf) {
     eventStream = eventController.stream;
     reconnect();
   }
@@ -86,6 +87,7 @@ class OpenDAFWS {
             case WS_RESPONSE_MEASUREMENT_UPDATE_NOTIFICATION:
               Set<Measurement> m = new Set<Measurement>();
               data["updates"].forEach((measurementUpdate) {
+                  print(measurementUpdate);
                   m.add(new Measurement.fromJson(measurementUpdate));
               });
               eventController.add(new MeasurementUpdateNotification()..measurements = m);
@@ -94,7 +96,7 @@ class OpenDAFWS {
             case WS_RESPONSE_ALARMS_STATE_CHANGE_NOTIFICATION:
               Set<Alarm> a = new Set<Alarm>();
               data["changes"].forEach((alarmStateChange) {
-                  a.add(new Alarm.fromJson(alarmStateChange));
+                  a.add(new Alarm.fromRuntimeJson(this._opendaf, alarmStateChange));
               });
               eventController.add(new AlarmStateChangeNotification()..alarms = a);
               eventController.add(new AlarmStateChangeNotification());
