@@ -1,7 +1,5 @@
 part of opendaf;
 
-abstract class StreamEvent {}
-
 class Response extends StreamEvent{}
 class AlarmStateChangeNotification extends StreamEvent{ Set<Alarm> alarms; }
 class MeasurementUpdateNotification extends StreamEvent{ Set<Measurement> measurements; }
@@ -43,7 +41,9 @@ class OpenDAFWS {
   Map<int, Completer> _completers = new Map<int, Completer>();
 
   final Map<dynamic, Set<String>> _measurementsByObject = new Map<dynamic, Set<String>>();
+  final Map<dynamic, Set<String>> _alarmsByObject = new Map<dynamic, Set<String>>();
   Set<String> _watchedMeasurements = new Set<String>();
+  Set<String> _watchedAlarms = new Set<String>();
 
 
   OpenDAFWS(this._http, this._opendaf) {
@@ -72,6 +72,7 @@ class OpenDAFWS {
 
       /// For reconnect
       _mergeMeasurementSet(forceWatchSet: true);
+      _mergeAlarmSet(forceWatchSet: true);
 
       _keepAliveTimer = new Timer.periodic(new Duration(seconds: 30), (Timer t) {
         heartbeat();
@@ -88,6 +89,12 @@ class OpenDAFWS {
               Set<Measurement> m = new Set<Measurement>();
               data["updates"].forEach((measurementUpdate) {
                   print(measurementUpdate);
+
+                  //TODO: update v _opendaf.root.measurements, ako v alarmoch
+                  // String name = measurementUpdate["name"];
+                  // if(_opendaf.root.measurements.containsKey(name))
+                    // _opendaf.root.measurements[name].updateRuntimeJson(measurementUpdate);
+
                   m.add(new Measurement.fromJson(measurementUpdate));
               });
               eventController.add(new MeasurementUpdateNotification()..measurements = m);
@@ -96,10 +103,16 @@ class OpenDAFWS {
             case WS_RESPONSE_ALARMS_STATE_CHANGE_NOTIFICATION:
               Set<Alarm> a = new Set<Alarm>();
               data["changes"].forEach((alarmStateChange) {
+                  String name = alarmStateChange["name"];
+                  // print("Alarm $name change notification");
+                  // print(alarmStateChange);
+
+                  if(_opendaf.root.alarms.containsKey(name))
+                    _opendaf.root.alarms[name].updateRuntimeJson(alarmStateChange);
+                    
                   a.add(new Alarm.fromRuntimeJson(this._opendaf, alarmStateChange));
               });
               eventController.add(new AlarmStateChangeNotification()..alarms = a);
-              eventController.add(new AlarmStateChangeNotification());
               break;
 
             default:
@@ -198,8 +211,44 @@ class OpenDAFWS {
     watch["request"] = WS_REQUEST_WATCH_MEASUREMENTS;
     watch["measurements"] = toWatch.toList();
 
-//    print("toUnwatch: " + toUnwatch.toString());
-//    print("toWatch: " + toWatch.toString());
+    return Future.wait([
+      toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
+      toWatch.isNotEmpty ? _ws_request(watch) : new Future.value(),
+    ]);
+  }
+
+
+  Future<dynamic> _mergeAlarmSet({bool forceWatchSet = false, bool forceUnwatchSet = false}) {
+    /// Create copy of [_currentAlarmsWatchSet] for future diff
+    Set<String> oldSet = new Set<String>.from(_watchedAlarms);
+    _watchedAlarms.clear();
+
+    /// Create new set of [_watchedAlarms] by merging all sets
+    _alarmsByObject.values.forEach((set) { set.forEach((_) { _watchedAlarms.add(_); }); });
+
+    /// Diff old and new set
+    Set<String> toWatch = new Set<String>(), toUnwatch = new Set<String>();
+    oldSet.forEach((a) {
+      if(!_watchedAlarms.contains(a) || forceUnwatchSet){
+        /// Not in new set anymore, unobserve this measurement
+        toUnwatch.add(a);
+      }
+    });
+
+    _watchedAlarms.forEach((a) {
+      if(!oldSet.contains(a) || forceWatchSet){
+        /// Not in new set anymore, unobserve this measurement
+        toWatch.add(a);
+      }
+    });
+
+    Map<String, dynamic> unwatch = new Map<String, dynamic>();
+    unwatch["request"] = WS_REQUEST_UNWATCH_ALARMS;
+    unwatch["alarms"] = toUnwatch.toList();
+
+    Map<String, dynamic> watch = new Map<String, dynamic>();
+    watch["request"] = WS_REQUEST_WATCH_ALARMS;
+    watch["alarms"] = toWatch.toList();
 
     return Future.wait([
       toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
@@ -238,6 +287,37 @@ class OpenDAFWS {
   Future<dynamic> unwatchAllMeasurements(dynamic objectReference){
     _measurementsByObject[objectReference] = new Set<String>();
     return _mergeMeasurementSet();
+  }
+
+  /// [WatchAlarms] request handler.
+  ///
+  /// To unwatch some alarms simply send new [names] Set and let function handle all by itself.
+  ///
+  /// [objectReference] = usually [this]
+  Future<dynamic> watchAlarms(dynamic objectReference, Set<String> names){
+    names.forEach((m) {
+     if(m == null )
+       throw new StateError("WatchAlarms accepts only non-null names");
+    });
+    
+    Set<String> watchedAlarms = _alarmsByObject[objectReference];
+    if(watchedAlarms == null) {
+      watchedAlarms = new Set<String>();
+      _alarmsByObject[objectReference] = watchedAlarms;
+    } else {
+      watchedAlarms.clear();
+    }
+    
+    names.forEach((m) {
+        watchedAlarms.add(m);
+    });
+
+    return _mergeAlarmSet();
+  }
+
+  Future<dynamic> unwatchAllAlarms(dynamic objectReference){
+    _alarmsByObject[objectReference] = new Set<String>();
+    return _mergeAlarmSet();
   }
 
   Future<dynamic> writeCommand (String commandName, String newValueWithPrefix)
