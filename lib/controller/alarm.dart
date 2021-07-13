@@ -8,6 +8,12 @@ class AlarmController {
 
   AlarmController(this._opendaf, this._http);
 
+  Set<String> get properties {
+    Set<String> res = new Set<String>();
+    _opendaf.root.alarms.values.forEach((a) => res.addAll(a.properties.keys));
+    return res;
+  } 
+
   Future reload({RequestOptions options}) {
     return list(options: options)
       .then((Map<String, Alarm> _) {
@@ -104,12 +110,12 @@ class AlarmController {
         .then((_) => delete(alm.name));
   }
 
-  Future _op(String name, String op, {String authority = ""}) =>
+  Future _op(String name, String op, String authority) =>
     _http.post("${OpenDAF.prefix}/alarms/$name/$op?authority=$authority");
 
-  Future acknowledge(String name) => _op(name, "acknowledge");
-  Future activate(String name) => _op(name, "activate");
-  Future deactivate(String name) => _op(name, "deactivate");
+  Future acknowledge(String name, {String authority = "webdaf"}) => _op(name, "acknowledge", authority);
+  Future activate(String name, {String authority = "webdaf"}) => _op(name, "activate", authority);
+  Future deactivate(String name, {String authority = "webdaf"}) => _op(name, "deactivate", authority);
 
 }
 	

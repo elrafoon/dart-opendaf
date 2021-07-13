@@ -18,12 +18,12 @@ class Alarm {
   EAlarmState state;
 
   // Configuration
-  String name = "";
+  String name;
   String description = "";
-  int severity;
-  String archMode;
-  String ackMode;
-  bool enabled;
+  int severity = 0;
+  String archMode = AM_CHANGE;
+  String ackMode = "manual";
+  bool enabled = true;
 
   Map<String, dynamic> properties = new Map<String, dynamic>();
 
@@ -92,7 +92,7 @@ class Alarm {
       this.cfg_stash();
   }
 
-  Alarm dup() => new Alarm(_opendaf, name, description, severity, archMode, ackMode, enabled, properties);  
+  Alarm dup() => new Alarm(_opendaf, name, description, severity, archMode, ackMode, enabled, new Map<String, dynamic>.from(properties));  
 
 
   void cfg_assign(Alarm other) {
