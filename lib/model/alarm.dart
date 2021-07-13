@@ -35,7 +35,7 @@ class Alarm {
     : timestamp.toString() 
   );
 
-  int get stateNumber => state.index;
+  int get stateNumber => state?.index ?? -1;
 
   static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
 
