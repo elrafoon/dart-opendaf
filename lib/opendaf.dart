@@ -3,6 +3,7 @@ library opendaf;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:html';
 import 'package:convert/convert.dart';
 import 'package:angular/angular.dart';
 import 'package:http/http.dart' as http;
@@ -24,6 +25,7 @@ part 'model/function_module.dart';
 part 'model/root.dart';
 
 part 'controller/alarm.dart';
+part 'controller/function_module.dart';
 part 'controller/controller.dart';
 
 part 'opendaf_ws.dart';
@@ -42,24 +44,17 @@ class OpenDAF {
   Root root;
 
   OpenDAF(this._http) {
-    ctrl = new Controller(this, this._http);
     root = new Root();
+    ctrl = new Controller(this, this._http);
   }
 
 
   static Map<String, String> _headers = { "content-type" : "application/json; charset=UTF-8" };
-
   static dynamic _json(http.Response rsp) => rsp != null ? JSON.decode(new Utf8Decoder().convert(rsp.bodyBytes)) : null;
 
 
-
-
-
-
-
-
   Future<Measurement> measurement(String name) => _http.get(prefix + "measurements/" + name)
-      .then((http.Response _) => new Measurement.fromJson(_json(_)));
+      .then((http.Response _) => new Measurement.fromRuntimeJson(this, _json(_)));
   Future<VTQ> vtq(String measurementName) => measurement(measurementName).then((Measurement _) => _.vtq);
   Future<dynamic> value(String measurementName) => vtq(measurementName).then((VTQ _) => _.value);
 
@@ -83,7 +78,7 @@ class OpenDAF {
         names.forEach((name) {
           Map<String, dynamic> json = rawM[name];
           if(json != null)
-            m[name] = new Measurement.fromJson(json);
+            m[name] = new Measurement.fromRuntimeJson(this, json);
         });
         return m;
       });
@@ -119,7 +114,7 @@ class OpenDAF {
      
 
   Future<Command> command(String name) => _http.get(prefix + "commands/" + name)
-      .then((http.Response _) => new Command.fromJson(_json(_)));
+      .then((http.Response _) => new Command.fromRuntimeJson(this, _json(_)));
   Future<VT> commandVT(String commandName) => command(commandName).then((Command _) => _.vt);
   Future<dynamic> commandValue(String commandName) => vtq(commandName).then((VTQ _) => _.value);
 
@@ -140,7 +135,7 @@ class OpenDAF {
       .then((http.Response _) {
         Map<String, Command> m = new Map<String, Command>();
         Map<String, dynamic> rawM = _json(_);
-        rawM.forEach((String name, dynamic json) { m[name] = new Command.fromJson(json); });
+        rawM.forEach((String name, dynamic json) { m[name] = new Command.fromRuntimeJson(this, json); });
         return m;
       });
   }
@@ -161,23 +156,6 @@ class OpenDAF {
 
   Future writeCommand(String command, String valueWithPrefix) =>
       _http.put(new Uri(path: prefix + "commands/" + command, queryParameters : {"value" : valueWithPrefix}));
-
-  Future<FunctionModule> functionModule(String name) =>
-      _http.get("$prefix/function-modules/$name")
-      .then((http.Response _) => new FunctionModule.fromJson(_json(_)));
-
-  Future<Map<String, FunctionModule>> functionModules(Iterable<String> names) =>
-      _http.get("$prefix/function-modules/")
-      .then((http.Response _) {
-        Map<String, FunctionModule> fm = new Map<String, FunctionModule>();
-        Map<String, dynamic> rawFMs = _json(_);
-        names.forEach((name) {
-          Map<String, dynamic> json = rawFMs[name];
-          if(json != null)
-            fm[name] = new FunctionModule.fromJson(json);
-        });
-        return fm;
-      });
 
   /*
    * archive access

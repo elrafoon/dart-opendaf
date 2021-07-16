@@ -14,6 +14,8 @@ class AlarmController {
     return res;
   } 
 
+  Future load({RequestOptions options}) => _opendaf.root.alarmsLoaded ? reload() : new Future.value(null);
+
   Future reload({RequestOptions options}) {
     return list(options: options)
       .then((Map<String, Alarm> _) {
@@ -22,7 +24,8 @@ class AlarmController {
         _opendaf.root.alarms.addAll(_);
       })
       .then((_) {
-         _opendaf.root.eventController.add(new AlarmsSetChanged());
+        _opendaf.root.alarmsLoaded = true;
+        _opendaf.root.eventController.add(new AlarmsSetChanged());
       });
   }
 

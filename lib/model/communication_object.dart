@@ -1,6 +1,8 @@
 part of opendaf;
 
 class CommunicationObject {
+  static const String AM_NONE = "none", AM_CHANGE = "change", AM_PERIODIC = "periodic";
+  
   final String name, address;
   final int datatype, rawDatatype;
   final Range euRange, rawRange;

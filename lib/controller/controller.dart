@@ -5,9 +5,11 @@ class Controller {
   final OpenDAF _opendaf;
 
   AlarmController alarm;
+  FunctionModuleController fm;
 
   Controller (this._opendaf, this._http){
     alarm = new AlarmController(this._opendaf, this._http);
+    fm = new FunctionModuleController(this._opendaf, this._http);
   }
 
 }
