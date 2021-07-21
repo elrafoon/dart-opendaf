@@ -130,8 +130,8 @@ class Alarm {
 
   void cfg_stash() => _original = this.dup();
   void cfg_revert() => this.cfg_assign(_original);
-  void cfg_changed() => !cfg_compare(_original);
-  void cfg_name_changed() => this.name != this._original?.name;
+  bool cfg_changed() => !cfg_compare(_original);
+  bool cfg_name_changed() => this.name != this._original?.name;
 
   Map<String, dynamic> toCfgJson() => {
     "name": name,

@@ -14,19 +14,31 @@ class AlarmController {
     return res;
   } 
 
-  Future load({RequestOptions options}) => _opendaf.root.alarmsLoaded ? reload() : new Future.value(null);
+  Future load({RequestOptions options}) => !_opendaf.root.alarmsLoaded ? reload(options: options) : new Future.value(null);
 
-  Future reload({RequestOptions options}) {
-    return list(options: options)
-      .then((Map<String, Alarm> _) {
-        _options = options;
-        _opendaf.root.alarms.clear();
-        _opendaf.root.alarms.addAll(_);
-      })
-      .then((_) {
-        _opendaf.root.alarmsLoaded = true;
-        _opendaf.root.eventController.add(new AlarmsSetChanged());
+  Future reload({RequestOptions options}) async {
+    this._options = options;
+    Future future;
+
+    List<String> _names = options.names != null && options.names.isNotEmpty ? options.names : await names();
+    List<RequestOptions> _partialOptions = new List<RequestOptions>();
+    for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
+      // Prepare sets
+      RequestOptions _opt = options.dup();
+      _opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
+      _partialOptions.add(_opt);
+    }
+
+    // Clear root model
+    _opendaf.root.alarms.clear();
+    await _partialOptions.forEach((opt) async {
+      Map<String, Alarm> _ = await list(options: opt);
+      _opendaf.root.alarms.addAll(_);
+      _opendaf.root.eventController.add(new AlarmsSetChanged());
       });
+    _opendaf.root.alarmsLoaded = true;
+
+    return future;
   }
 
   Future<Alarm> item(String name, {bool fetchRuntime = true, bool fetchConfiguration = false}) {
@@ -42,10 +54,15 @@ class AlarmController {
     });
   }
 
+  Future<List<String>> names() =>
+    _http.get("${OpenDAF.dafmanPrefix}/alarms/names", headers: OpenDAF._headers)
+    .then((http.Response response) => OpenDAF._json(response));
+  
+
   Future<Map<String, Alarm>> list({RequestOptions options}) {
     String optNames, optFields;
 
-    if(options.names != null && options.names.length < OpenDAF.MAX_NAMES_IN_REQUEST)
+    if(options.names != null && options.names.length <= OpenDAF.MAX_NAMES_IN_REQUEST)
       optNames = "names=" + options.names.join(",");
 
     if(options.fields != null)

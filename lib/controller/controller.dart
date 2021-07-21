@@ -15,10 +15,16 @@ class Controller {
 }
 
 class RequestOptions {
+  static const int LOAD_MODE_PARALLEL = 0, LOAD_MODE_SEQUENTIALLY = 1;
+
   Iterable<String> names = null;
   Iterable<String> fields = null; 
   bool fetchRuntime = true; 
   bool fetchConfiguration = false;
 
   RequestOptions({this.names, this.fields, this.fetchRuntime, this.fetchConfiguration});
+
+  RequestOptions dup() => new RequestOptions(names: this.names, fields: this.fields, fetchRuntime: this.fetchRuntime, fetchConfiguration: this.fetchConfiguration);
+
+  String toString() => "fetchRuntime: $fetchRuntime, fetchConfiguration: $fetchConfiguration, names: $names, fields: $fields";
 }
