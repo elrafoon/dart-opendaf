@@ -24,8 +24,8 @@ class FunctionModule {
   bool runtimeLoaded;
 
   /* Configuration */
-  String executable;
-  String description;
+  String executable = "";
+  String description = "";
   bool enabled = true;
   int termToKill = 2000;
   int queryTimeout = 5000;
@@ -45,13 +45,14 @@ class FunctionModule {
   /* Getters */
   FunctionModule get original => _original;
   String get id => this.name;
+  String get className => "Function Module";
   String toString() => id;
   bool get isEditable => this.original != null;
 
   void cfg_stash()          => _original = this.dup();
   void cfg_revert()         => this.cfg_assign(_original);
-  void cfg_changed()        => !cfg_compare(_original);
-  void cfg_name_changed()   => this.name != this._original?.name;
+  bool cfg_changed()        => !cfg_compare(_original);
+  bool cfg_name_changed()   => this.name != this._original?.name;
 
   void updateRuntimeJson(Map<String, dynamic> runtime){
     if(runtime == null)
@@ -70,7 +71,7 @@ class FunctionModule {
         return;
 
       if(cfg["name"] != null)           this.name         = cfg["name"];      
-      if(cfg["executable"] != null)     this.name         = cfg["executable"];
+      if(cfg["executable"] != null)     this.executable   = cfg["executable"];
       if(cfg["description"] != null)    this.description  = cfg["description"];
       if(cfg["enabled"] != null)        this.enabled      = cfg["enabled"];
       if(cfg["termToKill"] != null)     this.termToKill   = cfg["termToKill"];
@@ -84,15 +85,15 @@ class FunctionModule {
   }
 
   FunctionModule dup() => new FunctionModule(_opendaf, 
-    name:         this.name, 
-    executable:   this.executable, 
-    description:  this.description, 
-    enabled:      this.enabled, 
-    termToKill:   this.termToKill, 
-    queryTimeout: this.queryTimeout, 
-    respawn:      this.respawn, 
-    debug:        this.debug, 
-    properties:   new Map<String, dynamic>.from(this.properties)
+    name:         name, 
+    executable:   executable, 
+    description:  description, 
+    enabled:      enabled, 
+    termToKill:   termToKill, 
+    queryTimeout: queryTimeout, 
+    respawn:      respawn, 
+    debug:        debug, 
+    properties:   new Map<String, dynamic>.from(properties)
   );  
 
 
@@ -101,6 +102,7 @@ class FunctionModule {
       return;
       
     this.name         = other.name;
+    this.executable   = other.executable;
     this.description  = other.description;
     this.enabled      = other.enabled;
     this.termToKill   = other.termToKill;
@@ -123,6 +125,7 @@ class FunctionModule {
 
     return propertiesMatch &&
       this.name         == other.name         &&
+      this.executable   == other.executable   &&
       this.description  == other.description  &&
       this.enabled      == other.enabled      &&
       this.termToKill   == other.termToKill   &&

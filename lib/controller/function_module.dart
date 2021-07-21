@@ -14,16 +14,31 @@ class FunctionModuleController {
     return res;
   } 
 
-  Future reload({RequestOptions options}) {
-    return list(options: options)
-      .then((Map<String, FunctionModule> _) {
-        _options = options;
-        _opendaf.root.functionModules.clear();
-        _opendaf.root.functionModules.addAll(_);
-      })
-      .then((_) {
-         _opendaf.root.eventController.add(new FunctionModulesSetChanged());
+  Future load({RequestOptions options}) => !_opendaf.root.functionModulesLoaded ? reload(options: options) : new Future.value(null);
+
+  Future reload({RequestOptions options}) async {
+    this._options = options;
+    Future future;
+
+    List<String> _names = options.names != null && options.names.isNotEmpty ? options.names : await names();
+    List<RequestOptions> _partialOptions = new List<RequestOptions>();
+    for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
+      // Prepare sets
+      RequestOptions _opt = options.dup();
+      _opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
+      _partialOptions.add(_opt);
+    }
+
+    // Clear root model
+    _opendaf.root.functionModules.clear();
+    await _partialOptions.forEach((opt) async {
+      Map<String, FunctionModule> _ = await list(options: opt);
+      _opendaf.root.functionModules.addAll(_);
+      _opendaf.root.eventController.add(new FunctionModulesSetChanged());
       });
+    _opendaf.root.functionModulesLoaded= true;
+
+    return future;
   }
 
   Future<Alarm> item(String name, {bool fetchRuntime = true, bool fetchConfiguration = false}) {
@@ -38,6 +53,10 @@ class FunctionModuleController {
       return fm;
     });
   }
+
+  Future<List<String>> names() =>
+    _http.get("${OpenDAF.dafmanPrefix}/function-modules/names", headers: OpenDAF._headers)
+    .then((http.Response response) => OpenDAF._json(response));
 
   Future<Map<String, FunctionModule>> list({RequestOptions options}) {
     String optNames, optFields;
