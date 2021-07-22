@@ -100,7 +100,7 @@ class FunctionModuleController {
 
   Future create(FunctionModule fm) =>
     _http.put(
-        new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}/configuration"),
+        new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}"),
         body: JSON.encode(fm.toCfgJson()),
         headers: {'Content-Type': 'application/json'})
     .then((_) {
@@ -109,7 +109,7 @@ class FunctionModuleController {
 
   Future update(FunctionModule fm) =>
       _http.put(
-          new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}/configuration"),
+          new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}"),
           body: JSON.encode(fm.toCfgJson()),
           headers: {'Content-Type': 'application/json'})
       .then((_) {
