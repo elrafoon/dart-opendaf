@@ -1,6 +1,7 @@
 part of opendaf;
 
 class FunctionModuleController {
+  static String _prefix = "function-modules";
   final http.Client _http;
   final OpenDAF _opendaf;
 
@@ -41,39 +42,19 @@ class FunctionModuleController {
     return future;
   }
 
-  Future<Alarm> item(String name, {bool fetchRuntime = true, bool fetchConfiguration = false}) {
-    return Future.wait([
-      fetchConfiguration ? _http.get("${OpenDAF.dafmanPrefix}/function-modules/$name", headers: OpenDAF._headers) : new Future.value(null),
-      fetchRuntime ? _http.get("${OpenDAF.prefix}/function-modules/$name", headers: OpenDAF._headers) : new Future.value(null)
-    ]).then((List<http.Response> response) {
-      FunctionModule fm = new FunctionModule.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
-      if(fetchConfiguration){
-        fm.updateConfigurationJson(OpenDAF._json(response[0]));
+  Future<Alarm> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)
+    .then((List<http.Response> response) {
+      FunctionModule item = new FunctionModule.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
+      if(options.fetchConfiguration){
+        item.updateConfigurationJson(OpenDAF._json(response[0]));
       }
-      return fm;
+      return item;
     });
-  }
 
-  Future<List<String>> names() =>
-    _http.get("${OpenDAF.dafmanPrefix}/function-modules/names", headers: OpenDAF._headers)
-    .then((http.Response response) => OpenDAF._json(response));
+  Future<List<String>> names() => _opendaf.names(_prefix);
 
-  Future<Map<String, FunctionModule>> list({RequestOptions options}) {
-    String optNames, optFields;
-
-    if(options.names != null && options.names.length < OpenDAF.MAX_NAMES_IN_REQUEST)
-      optNames = "names=" + options.names.join(",");
-
-    if(options.fields != null)
-      optFields = "fields=" + options.fields.join(",");
-
-    final Iterable<String> opts = [optNames, optFields].where((_) => _ != null);
-    final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";
-
-    return Future.wait([
-      options.fetchConfiguration ? _http.get("${OpenDAF.dafmanPrefix}/function-modules/$opt", headers: OpenDAF._headers) : new Future.value(null),
-      options.fetchRuntime ? _http.get("${OpenDAF.prefix}/function-modules/$opt", headers: OpenDAF._headers) : new Future.value(null)
-    ]).then((List<http.Response> response) {
+  Future<Map<String, FunctionModule>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
+    .then((List<http.Response> response) {
       Map<String, FunctionModule> fms = new Map<String, FunctionModule>();
       Map<String, dynamic> configurations = OpenDAF._json(response[0]);
       Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
@@ -96,31 +77,11 @@ class FunctionModuleController {
       });
       return fms;
     });
-  }
-
-  Future create(FunctionModule fm) =>
-    _http.put(
-        new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}"),
-        body: JSON.encode(fm.toCfgJson()),
-        headers: {'Content-Type': 'application/json'})
-    .then((_) {
-      return reload(options: _options);
-    });
-
-  Future update(FunctionModule fm) =>
-      _http.put(
-          new Uri(path: "${OpenDAF.dafmanPrefix}/function-modules/${fm.name}"),
-          body: JSON.encode(fm.toCfgJson()),
-          headers: {'Content-Type': 'application/json'})
-      .then((_) {
-        return reload(options: _options);
-      });
   
-  Future delete(String name) =>
-      _http.delete("${OpenDAF.dafmanPrefix}/function-modules/$name")
-      .then((_) {
-        return reload(options: _options);
-      });
+
+  Future create(FunctionModule item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
+  Future update(FunctionModule item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
   
   Future rename(FunctionModule fm, String newName) {
     FunctionModule duplicate = fm.dup();

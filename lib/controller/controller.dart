@@ -6,10 +6,22 @@ class Controller {
 
   AlarmController alarm;
   FunctionModuleController fm;
+  MeasurementController measurement;
+  CommandController command;
+  ConnectorController connector;
+  ConnectorStackController connectorStack;
+  ProviderController provider;
+  ProviderStackController providerStack;
 
   Controller (this._opendaf, this._http){
-    alarm = new AlarmController(this._opendaf, this._http);
-    fm = new FunctionModuleController(this._opendaf, this._http);
+    alarm           = new AlarmController(this._opendaf, this._http);
+    fm              = new FunctionModuleController(this._opendaf, this._http);
+    measurement     = new MeasurementController(this._opendaf, this._http);
+    command         = new CommandController(this._opendaf, this._http);
+    connector       = new ConnectorController(this._opendaf, this._http);
+    connectorStack  = new ConnectorStackController(this._opendaf, this._http);
+    provider        = new ProviderController(this._opendaf, this._http);
+    providerStack   = new ProviderStackController(this._opendaf, this._http);
   }
 
 }

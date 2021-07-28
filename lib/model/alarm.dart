@@ -39,7 +39,7 @@ class Alarm {
 
   static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
 
-  Alarm(this._opendaf, [this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled, this.properties]);
+  Alarm(this._opendaf, {this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled, this.properties});
 
   Alarm.empty(this._opendaf);
 
@@ -92,7 +92,15 @@ class Alarm {
       this.cfg_stash();
   }
 
-  Alarm dup() => new Alarm(_opendaf, name, description, severity, archMode, ackMode, enabled, new Map<String, dynamic>.from(properties));  
+  Alarm dup() => new Alarm(_opendaf, 
+    name: name, 
+    description: description, 
+    severity: severity, 
+    archMode: archMode, 
+    ackMode: ackMode,
+    enabled: enabled, 
+    properties: new Map<String, dynamic>.from(properties)
+  );  
 
 
   void cfg_assign(Alarm other) {
