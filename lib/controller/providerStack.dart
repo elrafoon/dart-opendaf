@@ -1,7 +1,7 @@
 part of opendaf;
 
 class ProviderStackController {
-  static String _prefix = "stack/providers";
+  static String _prefix = "stacks/provider";
   final http.Client _http;
   final OpenDAF _opendaf;
 

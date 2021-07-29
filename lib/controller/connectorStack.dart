@@ -1,7 +1,7 @@
 part of opendaf;
 
 class ConnectorStackController {
-  static String _prefix = "stack/connectors";
+  static String _prefix = "stacks/connector";
   final http.Client _http;
   final OpenDAF _opendaf;
 
