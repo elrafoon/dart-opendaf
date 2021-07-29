@@ -46,43 +46,30 @@ class ProviderController {
     return future;
   }
 
-  Future<Provider> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)
-    .then((List<http.Response> response) {
-      Provider item = new Provider.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
-      if(options.fetchConfiguration){
-        item.updateConfigurationJson(OpenDAF._json(response[0]));
-      }
-      return item;
-    });
+  Future<Provider> item(String name, {RequestOptions options}) {
+    options.fetchRuntime = false;
+    return _opendaf.item(_prefix, name, options: options)
+      .then((List<http.Response> response) {
+        return new Provider.fromCfgJson(this._opendaf, OpenDAF._json(response[0]));
+      });
+  } 
   
 
   Future<List<String>> names() => _opendaf.names(_prefix);
 
-  Future<Map<String, Provider>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
-    .then((List<http.Response> response) {
-      Map<String, dynamic> configurations = OpenDAF._json(response[0]);
-      Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
-      Map<String, Provider> items = new Map<String, Provider>();
+  Future<Map<String, Provider>> list({RequestOptions options}) {
+    options.fetchRuntime = false;
+    return _opendaf.list(_prefix, options: options)
+      .then((List<http.Response> response) {
+        Map<String, dynamic> configurations = OpenDAF._json(response[0]);
+        Map<String, Provider> items = new Map<String, Provider>();
 
-      runtimes.keys.forEach((name) {
-        items[name] = new Provider.fromRuntimeJson(this._opendaf, runtimes[name]);
-        if(options.fetchConfiguration){
-          items[name].updateConfigurationJson(configurations[name]);
-        }
-      });
-
-      configurations.keys.forEach((name) {
-        if(items.containsKey(name)){
-          if(options.fetchConfiguration){
-            items[name].updateConfigurationJson(configurations[name]);
-          }
-        } else {
+        configurations.keys.forEach((name) {
           items[name] = new Provider.fromCfgJson(this._opendaf, configurations[name]);
-        }
+        });
+        return items;
       });
-      return items;
-    });
-  
+  }
 
   Future create(Provider item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
   Future update(Provider item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
