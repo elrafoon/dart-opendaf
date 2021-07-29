@@ -172,4 +172,11 @@ class FunctionModule {
       default:                          return "--";
     }
   }
+
+  bool hasMatch(RegExp regex) => 
+       regex.hasMatch(name ?? "")
+    || regex.hasMatch(executable ?? "")
+    || regex.hasMatch(description ?? "")
+    || regex.hasMatch(stateName ?? "")
+  ;
 }

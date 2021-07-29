@@ -92,4 +92,11 @@ class StackInstantiation {
     'properties':         properties
   };
 
+  bool hasMatch(RegExp regex) => 
+       regex.hasMatch(name ?? "")
+    || regex.hasMatch(stackName ?? "")
+    || regex.hasMatch(wdtMeasurementName ?? "")
+    || regex.hasMatch(varsAsText ?? "")
+  ;
+
 }

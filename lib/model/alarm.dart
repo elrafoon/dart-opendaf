@@ -174,4 +174,11 @@ class Alarm {
 
   String get id => this.name;
   String toString() => id;
+
+    bool hasMatch(RegExp regex) => 
+       regex.hasMatch(name ?? "")
+    || regex.hasMatch(description ?? "")
+    || regex.hasMatch(archMode ?? "")
+    || regex.hasMatch(authority ?? "")
+  ;
 }

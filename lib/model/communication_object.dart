@@ -190,4 +190,14 @@ class CommunicationObject {
     return d;
   }
 
+  bool hasMatch(RegExp regex) => 
+       regex.hasMatch(name ?? "")
+    || regex.hasMatch(description ?? "")
+    || regex.hasMatch(connectorName ?? "")
+    || regex.hasMatch(address ?? "")
+    || regex.hasMatch(archMode ?? "")
+    || regex.hasMatch(leader ?? "")
+    || regex.hasMatch(eu ?? "")
+  ;
+
 }
