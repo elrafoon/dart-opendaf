@@ -21,6 +21,11 @@ class MeasurementController {
     this._options = options;
     Future future;
 
+    if(options.fetchConfiguration){
+      future = await _opendaf.ctrl.connector.load(options: options);
+      future = await _opendaf.ctrl.provider.load(options: options);
+    }
+
     List<String> _names = options.names != null && options.names.isNotEmpty ? options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {

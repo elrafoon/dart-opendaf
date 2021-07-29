@@ -18,6 +18,9 @@ class ConnectorController {
   Future load({RequestOptions options}) => !_opendaf.root.connectorsLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+    // Wait for stacks
+    await _opendaf.ctrl.connectorStack.load(options: options);
+
     this._options = options;
     Future future;
 
