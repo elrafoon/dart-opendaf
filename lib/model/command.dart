@@ -84,6 +84,14 @@ class Command extends CommunicationObject {
   String toString() => id;
   bool get isEditable => this.original != null;
 
+  String get smartValue => (vt?.value == null) ? "--" : vt.value;
+  String get smartTimestamp => (vt?.timestamp == null) ? "--" : (
+  getDate(new DateTime.now()) == getDate(vt.timestamp)
+  ? new DateFormat("HH:mm:ss").format(vt.timestamp)
+  : vt.timestamp.toString() 
+);
+  static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
+
   void cfg_stash()          => _original = this.dup();
   void cfg_revert()         => this.cfg_assign(_original);
   bool cfg_changed()        => !cfg_compare(_original);

@@ -7,6 +7,7 @@ class Provider extends StackInstantiation {
     super(_opendaf, name: name, stackName: stackName, vars: vars, wdtMeasurementName: wdtMeasurementName, properties: properties);
 
   Provider.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { super.updateConfigurationJson(cfg); }
+  Provider.empty(this._opendaf) : super(_opendaf);
 
   /* Getters */
   String get className => "Provider";

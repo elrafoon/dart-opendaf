@@ -30,11 +30,42 @@ class CommunicationObject {
   String eu;
   bool enabled = true;
   Map<String, dynamic> properties = new Map<String, dynamic>();
+
+  List<StackModule> stackModules = [];
   
   CommunicationObject(this._opendaf, {this.name, this.description, this.connectorName, this.address, this.datatype,
           this.euRangeLow, this.euRangeHigh, this.rawDatatype, this.rawRangeLow, this.rawRangeHigh,
           this.providerAddresses, this.archMode, this.archPeriod, this.archValueDeadband, this.archTimeDeadband, this.leader,
           this.stackUmask, this.eu, this.enabled, this.properties});
+
+  String get dataTypeDesc => Datatype.getDescription(datatype);
+  void set dataTypeDesc(String value) { datatype = Datatype.fromPrefix(Datatype.fromDescription(value)); }
+  List<String> get dataTypeDescriptions => Datatype.descriptions;
+
+  String get rawDataTypeDesc => Datatype.getDescription(rawDatatype);
+  void set rawDataTypeDesc(String value) { rawDatatype = Datatype.fromPrefix(Datatype.fromDescription(value)); }
+  List<String> get archModes =>  new List.from(["none", "change", "periodic"]);
+
+  String get stackUmaskToString => stackModules.where((m) => m.enabled).map((m) => m.name).join(', ');
+
+  String get providerAddressesAsText {
+    StringBuffer s = new StringBuffer();
+    providerAddresses.forEach((k, v) {
+      s.write("$k:$v\n");
+    });
+    return s.toString();
+  }
+  
+  void set providerAddressesAsText(String value) {
+    Map<String, String> map = new Map<String, String>(); 
+    value.split("\n").map((String _) => _.trim()).where((String _) => _.length > 0).forEach((String row) {
+      int ixSep = row.indexOf(":");
+      if(ixSep == -1)
+        throw new ProviderAddressesException("Row '$row' does not contain separator ':'!");
+      map[row.substring(0, ixSep)] = row.substring(ixSep+1);
+    });
+    providerAddresses = map;
+  }
 
   void updateRuntimeJson(Map<String, dynamic> runtime){
     if(runtime == null)
@@ -56,7 +87,7 @@ class CommunicationObject {
     if(cfg["description"] != null)        this.description        = cfg["description"];
     if(cfg["connectorName"] != null)      this.connectorName      = cfg["connectorName"];
     if(cfg["address"] != null)            this.address            = cfg["address"];
-    if(cfg["datatype"] != null)           this.datatype           = cfg["datatype"];
+    if(cfg["datatype"] != null)           this.datatype           = Datatype.fromPrefix(cfg["datatype"]);
     if(cfg["euRangeLow"] != null)         this.euRangeLow         = cfg["euRangeLow"];
     if(cfg["euRangeHigh"] != null)        this.euRangeHigh        = cfg["euRangeHigh"];      
     if(cfg["rawDataType"] != null)        this.rawDatatype        = Datatype.fromPrefix(cfg["rawDataType"]);

@@ -11,6 +11,14 @@ class ProviderStacksSetChanged extends StreamEvent{ }
 class FunctionModulesSetChanged extends StreamEvent{ }
 class AlarmsSetChanged extends StreamEvent{ }
 
+class ModelException implements Exception {}
+class ProviderAddressesException extends ModelException {
+  String _msg;
+  
+  ProviderAddressesException(this._msg);
+  String toString() => _msg;
+}
+
 class Root {
   final Map<String, Measurement> measurements = new SplayTreeMap<String, Measurement>();
   final Map<String, Command> commands = new SplayTreeMap<String, Command>();
