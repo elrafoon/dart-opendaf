@@ -1,7 +1,12 @@
 part of opendaf;
 
 class Command extends CommunicationObject {
-  static const int CS_SCALER = 2;
+  static const int CS_SCALER = 2, CS_RAW_RANGE_LIMIT = 16, CS_EU_RANGE_LIMIT = 21;
+  List<StackModule> stackModules = [
+    new StackModule("Scaler", CS_SCALER),
+    new StackModule("RawRangeLimit", CS_RAW_RANGE_LIMIT),
+    new StackModule("EuRangeLimit", CS_EU_RANGE_LIMIT)
+  ];
 
   final OpenDAF _opendaf;
   Command _original;
@@ -34,7 +39,7 @@ class Command extends CommunicationObject {
       eu: eu, 
       enabled: enabled, 
       properties: properties
-    );
+    ) { this.updateStackModules(); }
 
   Command dup() => new Command(_opendaf, 
       name: name, 
@@ -59,7 +64,16 @@ class Command extends CommunicationObject {
     );
   
 
-  Command.empty(this._opendaf) : super(_opendaf);
+  Command.empty(this._opendaf) : super(_opendaf, 
+    providerAddresses : new Map<String, String>(),
+    stackUmask: 0,
+    archMode: "none",
+    archPeriod: 1000,
+    archTimeDeadband: 0,
+    enabled: true,
+    properties: new Map<String, String>()
+  );
+
   Command.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
   Command.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }
 
@@ -90,7 +104,18 @@ class Command extends CommunicationObject {
     super.updateConfigurationJson(cfg);
     if(cfg["initialValue"] != null)       this.initialValue       = cfg["initialValue"];
 
+    this.updateStackModules();
     this.cfg_stash();
+  }
+
+  void updateStackModules(){
+    if(this.stackUmask == null){
+      this.stackUmask = 0;
+    }
+    stackModules.forEach((stackModule) {
+      stackModule.enabled = (this.stackUmask & stackModule.id) != 0;
+      stackModule.parent = this;
+    });
   }
 
   void cfg_assign(Command other) {

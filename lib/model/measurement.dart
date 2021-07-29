@@ -3,6 +3,13 @@ part of opendaf;
 class Measurement extends CommunicationObject {
   static const int MS_WATCHDOG = 1, MS_SCALER = 2, MS_DEDUPLICATOR = 4, MS_DEADBAND = 8;
 
+  List<StackModule> stackModules = [
+    new StackModule("Watchdog", MS_WATCHDOG),
+    new StackModule("Scaler", MS_SCALER),
+    new StackModule("Deduplicator", MS_DEDUPLICATOR),
+    new StackModule("Deadband", MS_DEADBAND)
+  ];
+
   final OpenDAF _opendaf;
 
   Measurement _original;
@@ -35,7 +42,7 @@ class Measurement extends CommunicationObject {
       eu: eu, 
       enabled: enabled, 
       properties: properties
-    );
+    ){ this.updateStackModules(); }
 
   Measurement dup() => new Measurement(_opendaf, 
       name: name, 
@@ -59,7 +66,15 @@ class Measurement extends CommunicationObject {
       properties: properties
     );
 
-  Measurement.empty(this._opendaf) : super(_opendaf);
+  Measurement.empty(this._opendaf) : super(_opendaf, 
+    providerAddresses : new Map<String, String>(),
+    stackUmask: 0,
+    archMode: "none",
+    archPeriod: 1000,
+    archTimeDeadband: 0,
+    enabled: true,
+    properties: new Map<String, String>()
+  );
   Measurement.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
   Measurement.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }
 
@@ -90,7 +105,19 @@ class Measurement extends CommunicationObject {
     super.updateConfigurationJson(cfg);
     if(cfg["deadband"] != null)           this.deadband           = cfg["deadband"];
 
+    this.updateStackModules();
+
     this.cfg_stash();
+  }
+
+  void updateStackModules(){
+    if(this.stackUmask == null){
+      this.stackUmask = 0;
+    }
+    stackModules.forEach((stackModule) {
+      stackModule.enabled = (this.stackUmask & stackModule.id) != 0;
+      stackModule.parent = this;
+    });
   }
 
   Map<String, dynamic> toCfgJson() {

@@ -20,7 +20,7 @@ class CommunicationObject {
   String euRangeHigh;
   String rawRangeLow;
   String rawRangeHigh;
-  Map<String, String> providerAddresses;
+  Map<String, String> providerAddresses = new Map<String, String>();
   String archMode = "none";
   int archPeriod = 1000; // [] = ms
   String archValueDeadband;
