@@ -24,6 +24,17 @@ class Controller {
     providerStack   = new ProviderStackController(this._opendaf, this._http);
   }
 
+  Future reload() => Future.wait([
+    connectorStack.reload(),
+    connector.reload(),
+    providerStack.reload(),
+    provider.reload(),
+    command.reload(),
+    measurement.reload(),
+    alarm.reload(),
+    fm.reload(),
+  ]);
+
 }
 
 class RequestOptions {
