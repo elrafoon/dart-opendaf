@@ -148,4 +148,37 @@ class Command extends CommunicationObject {
     js['initialValue'] = initialValue;
     return js;
   }
+
+  Future write(dynamic value) {
+    if(datatype == null || datatype == Datatype.DT_EMPTY)
+      return new Future.error("Can't write null command!");
+    
+    switch(datatype) {
+      case Datatype.DT_BINARY:
+        if(!(value is bool))
+          return new Future.error("Write binary command argument must be bool");
+        break;
+        
+      case Datatype.DT_QUATERNARY:
+      case Datatype.DT_INTEGER:
+      case Datatype.DT_LONG:
+        if(!(value is int))
+          return new Future.error("Write quaternary, integer and long command argument must be int");
+        break;
+        
+      case Datatype.DT_FLOAT:
+      case Datatype.DT_DOUBLE:
+        if(!(value is num))
+          return new Future.error("Write quaternary, integer and long command argument must be number");
+        break;
+        
+      case Datatype.DT_STRING:
+        break;
+        
+      default:
+        return new Future.error("Unknown command data type '${datatype}'");
+    }
+
+    return _opendaf.writeCommand(this.name, Value.formatAs(value, datatype));
+  }
 }
