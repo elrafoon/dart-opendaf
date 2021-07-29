@@ -55,6 +55,8 @@ class StackInstantiation {
     this.vars               = other.vars;
     this.wdtMeasurementName = other.wdtMeasurementName;
     this.properties         = other.properties;
+
+    this.cfg_stash();
   }
 
   bool cfg_compare(StackInstantiation other){

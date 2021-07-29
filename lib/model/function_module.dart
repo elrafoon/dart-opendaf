@@ -110,6 +110,8 @@ class FunctionModule {
     this.respawn      = other.respawn;
     this.debug        = other.debug;
     this.properties   = other.properties;
+
+    this.cfg_stash();
   }
 
   bool cfg_compare(FunctionModule other){

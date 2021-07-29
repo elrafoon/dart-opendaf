@@ -114,6 +114,8 @@ class Alarm {
     this.ackMode      = other.ackMode;
     this.enabled      = other.enabled;
     this.properties   = other.properties;
+
+    this.cfg_stash();
   }
 
   bool cfg_compare(Alarm other){

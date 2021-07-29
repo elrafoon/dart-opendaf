@@ -87,7 +87,7 @@ class Measurement extends CommunicationObject {
     if(cfg == null)
       return;
 
-    super.updateRuntimeJson(cfg);
+    super.updateConfigurationJson(cfg);
     if(cfg["deadband"] != null)           this.deadband           = cfg["deadband"];
 
     this.cfg_stash();
@@ -117,6 +117,8 @@ class Measurement extends CommunicationObject {
       
     super.cfg_assign(other);
     this.deadband = other.deadband;
+
+    this.cfg_stash();
   }
 
   bool cfg_compare(Measurement other){

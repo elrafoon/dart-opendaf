@@ -87,7 +87,7 @@ class Command extends CommunicationObject {
     if(cfg == null)
       return;
 
-    super.updateRuntimeJson(cfg);
+    super.updateConfigurationJson(cfg);
     if(cfg["initialValue"] != null)       this.initialValue       = cfg["initialValue"];
 
     this.cfg_stash();
@@ -99,6 +99,8 @@ class Command extends CommunicationObject {
       
     super.cfg_assign(other);
     this.initialValue = other.initialValue;
+
+    this.cfg_stash();
   }
 
   bool cfg_compare(Command other){
