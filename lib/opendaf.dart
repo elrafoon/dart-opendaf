@@ -345,4 +345,21 @@ class OpenDAF {
 
   Future<int> get archivePid =>
       _http.get(archPrefix + "management/pid").then((http.Response rsp) => _parsePid(rsp.body));
+
+  Future downloadDatabase() =>
+    _http.get(dafmanPrefix + '/cfgdb/database')
+    .then((rsp) => _json(rsp));
+  
+  Future uploadDatabase(File database, {bool render: true}) =>
+      HttpRequest.request(
+          new Uri(path: dafmanPrefix + '/cfgdb/database').toString() + "?render=${render ? '1' : '0'}",
+          method: 'POST',
+          mimeType: "application/octet-stream",
+          sendData: database,
+          requestHeaders: { 'Content-Type': 'application/octet-stream' }
+      );
+
+  Future render() => _http.post(dafmanPrefix + "/cfgdb/render");
+  
+  Future<bool> get isRenderUpToDate => _http.get(dafmanPrefix + "/cfgdb/render").then((http.Response rsp) => _json(rsp));
 }
