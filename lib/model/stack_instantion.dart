@@ -112,9 +112,9 @@ class StackInstantiation {
       
     this.name               = other.name;
     this.stackName          = other.stackName;
-    this.vars               = other.vars;
+    this.vars               = new Map<String, dynamic>.from(other.vars);
     this.wdtMeasurementName = other.wdtMeasurementName;
-    this.properties         = other.properties;
+    this.properties         = new Map<String, dynamic>.from(other.properties);
 
     this.cfg_stash();
   }

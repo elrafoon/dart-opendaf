@@ -77,17 +77,26 @@ class FunctionModuleController {
       });
       return fms;
     });
-  
 
-  Future create(FunctionModule item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(FunctionModule item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+
+  Future create(FunctionModule item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.functionModules[item.name] = item;
+    _opendaf.root.eventController.add(new FunctionModulesSetChanged());
+  });
+  Future update(FunctionModule item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.functionModules[item.name] = item;
+    _opendaf.root.eventController.add(new FunctionModulesSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.functionModules.remove(name);
+    _opendaf.root.eventController.add(new FunctionModulesSetChanged());
+  });
   
   Future rename(FunctionModule fm, String newName) {
     FunctionModule duplicate = fm.dup();
     duplicate.name = newName;
-    return create(duplicate)
-        .then((_) => delete(fm.name));
+    return create(duplicate).then((_) => delete(fm.name));
   }
 
   Future uploadExecutable(String fmName, File executable) =>

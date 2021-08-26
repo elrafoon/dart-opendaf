@@ -23,6 +23,7 @@ class Command extends CommunicationObject {
       name: name, 
       description: description, 
       connectorName: connectorName, 
+      address: address,
       datatype: datatype, 
       euRangeLow: euRangeLow, 
       euRangeHigh: euRangeHigh, 
@@ -45,6 +46,7 @@ class Command extends CommunicationObject {
       name: name, 
       description: description, 
       connectorName: connectorName, 
+      address: address,
       datatype: datatype, 
       euRangeLow: euRangeLow, 
       euRangeHigh: euRangeHigh, 
@@ -52,6 +54,7 @@ class Command extends CommunicationObject {
       rawRangeLow: rawRangeLow, 
       rawRangeHigh: rawRangeHigh, 
       providerAddresses: providerAddresses, 
+      initialValue: initialValue,
       archMode: archMode, 
       archPeriod: archPeriod, 
       archValueDeadband: archValueDeadband, 
@@ -60,7 +63,7 @@ class Command extends CommunicationObject {
       stackUmask: stackUmask, 
       eu: eu, 
       enabled: enabled, 
-      properties: properties
+      properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
     );
   
 
@@ -72,7 +75,7 @@ class Command extends CommunicationObject {
     archTimeDeadband: 0,
     enabled: true,
     properties: new Map<String, String>()
-  );
+  ){ this.updateStackModules(); }
 
   Command.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
   Command.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }

@@ -85,9 +85,19 @@ class CommandController {
     });
   
 
-  Future create(Command item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(Command item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+  Future create(Command item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.commands[item.name] = item;
+    _opendaf.root.eventController.add(new CommandsSetChanged());
+  });
+  Future update(Command item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.commands[item.name] = item;
+    _opendaf.root.eventController.add(new CommandsSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.commands.remove(name);
+    _opendaf.root.eventController.add(new CommandsSetChanged());
+  });
   
   Future rename(Command item, String newName) {
     Command duplicate = item.dup();

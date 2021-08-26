@@ -71,9 +71,19 @@ class ProviderController {
       });
   }
 
-  Future create(Provider item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(Provider item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+  Future create(Provider item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.providers[item.name] = item;
+    _opendaf.root.eventController.add(new ProvidersSetChanged());
+  });
+  Future update(Provider item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.providers[item.name] = item;
+    _opendaf.root.eventController.add(new ProvidersSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.providers.remove(name);
+    _opendaf.root.eventController.add(new ProvidersSetChanged());
+  });
   
   Future rename(Provider item, String newName) {
     Provider duplicate = item.dup();

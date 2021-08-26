@@ -25,7 +25,8 @@ class Measurement extends CommunicationObject {
     :super(_opendaf, 
       name: name, 
       description: description, 
-      connectorName: connectorName, 
+      connectorName: connectorName,
+      address: address, 
       datatype: datatype, 
       euRangeLow: euRangeLow, 
       euRangeHigh: euRangeHigh, 
@@ -47,7 +48,8 @@ class Measurement extends CommunicationObject {
   Measurement dup() => new Measurement(_opendaf, 
       name: name, 
       description: description, 
-      connectorName: connectorName, 
+      connectorName: connectorName,
+      address: address, 
       datatype: datatype, 
       euRangeLow: euRangeLow, 
       euRangeHigh: euRangeHigh, 
@@ -55,6 +57,7 @@ class Measurement extends CommunicationObject {
       rawRangeLow: rawRangeLow, 
       rawRangeHigh: rawRangeHigh, 
       providerAddresses: providerAddresses, 
+      deadband: deadband,
       archMode: archMode, 
       archPeriod: archPeriod, 
       archValueDeadband: archValueDeadband, 
@@ -63,7 +66,7 @@ class Measurement extends CommunicationObject {
       stackUmask: stackUmask, 
       eu: eu, 
       enabled: enabled, 
-      properties: properties
+      properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
     );
 
   Measurement.empty(this._opendaf) : super(_opendaf, 
@@ -74,7 +77,7 @@ class Measurement extends CommunicationObject {
     archTimeDeadband: 0,
     enabled: true,
     properties: new Map<String, String>()
-  );
+  ){ this.updateStackModules(); }
   Measurement.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
   Measurement.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }
 

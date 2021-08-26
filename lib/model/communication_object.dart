@@ -88,11 +88,11 @@ class CommunicationObject {
     if(cfg["connectorName"] != null)      this.connectorName      = cfg["connectorName"];
     if(cfg["address"] != null)            this.address            = cfg["address"];
     if(cfg["datatype"] != null)           this.datatype           = Datatype.fromPrefix(cfg["datatype"]);
-    if(cfg["euRangeLow"] != null)         this.euRangeLow         = cfg["euRangeLow"];
-    if(cfg["euRangeHigh"] != null)        this.euRangeHigh        = cfg["euRangeHigh"];      
-    if(cfg["rawDataType"] != null)        this.rawDatatype        = Datatype.fromPrefix(cfg["rawDataType"]);
-    if(cfg["rawRangeLow"] != null)        this.rawRangeLow        = cfg["rawRangeLow"];
-    if(cfg["rawRangeHigh"] != null)       this.rawRangeHigh       = cfg["rawRangeHigh"];
+    if(cfg["euRangeLo"] != null)          this.euRangeLow         = cfg["euRangeLo"];
+    if(cfg["euRangeHi"] != null)          this.euRangeHigh        = cfg["euRangeHi"];      
+    if(cfg["rawDatatype"] != null)        this.rawDatatype        = Datatype.fromPrefix(cfg["rawDatatype"]);
+    if(cfg["rawRangeLo"] != null)         this.rawRangeLow        = cfg["rawRangeLo"];
+    if(cfg["rawRangeHi"] != null)         this.rawRangeHigh       = cfg["rawRangeHi"];
     if(cfg["providerAddresses"] != null)  this.providerAddresses  = cfg["providerAddresses"];
     if(cfg["archMode"] != null)           this.archMode           = cfg["archMode"];
     if(cfg["archPeriod"] != null)         this.archPeriod         = cfg["archPeriod"];
@@ -119,7 +119,7 @@ class CommunicationObject {
     this.rawDatatype        = other.rawDatatype;
     this.rawRangeLow        = other.rawRangeLow;
     this.rawRangeHigh       = other.rawRangeHigh;
-    this.providerAddresses  = other.providerAddresses;
+    this.providerAddresses  = new Map<String, dynamic>.from(other.providerAddresses);
     this.archMode           = other.archMode;
     this.archPeriod         = other.archPeriod;
     this.archValueDeadband  = other.archValueDeadband;
@@ -128,7 +128,7 @@ class CommunicationObject {
     this.stackUmask         = other.stackUmask;
     this.eu                 = other.eu;
     this.enabled            = other.enabled;
-    this.properties         = other.properties;
+    this.properties         = new Map<String, dynamic>.from(other.properties);
   }
 
   bool cfg_compare(CommunicationObject other){
@@ -142,7 +142,14 @@ class CommunicationObject {
       }
     });
 
-    return propertiesMatch &&
+    bool providerAddressesMatch = true;
+    this.providerAddresses.forEach((key, value) {
+      if(value != other.providerAddresses[key]){
+        providerAddressesMatch = false;
+      }
+    });
+
+    return propertiesMatch && providerAddressesMatch &&
       this.name               == other.name               &&
       this.description        == other.description        &&
       this.connectorName      == other.connectorName      &&
@@ -153,7 +160,6 @@ class CommunicationObject {
       this.rawDatatype        == other.rawDatatype        &&
       this.rawRangeLow        == other.rawRangeLow        &&
       this.rawRangeHigh       == other.rawRangeHigh       &&
-      this.providerAddresses  == other.providerAddresses  &&
       this.archMode           == other.archMode           &&
       this.archPeriod         == other.archPeriod         &&
       this.archValueDeadband  == other.archValueDeadband  &&
@@ -165,28 +171,32 @@ class CommunicationObject {
     ;
   }
 
-  Map<String, dynamic> toCfgJson() => {
-    "name":               name,
-    "description":        description,
-    'connectorName':      connectorName,
-    'address':            address,
-    'datatype':           Datatype.toPrefix(datatype),
-    'euRangeLow':         euRangeLow,
-    'euRangeHigh':        euRangeHigh,
-    'rawDatatype':        Datatype.toPrefix(rawDatatype),
-    'rawRangeLow':        rawRangeLow,
-    'rawRangeHigh':       rawRangeHigh,
-    'providerAddresses':  providerAddresses,
-    'archMode':           archMode,
-    'archPeriod':         archPeriod,
-    'archValueDeadband':  archValueDeadband,
-    'archTimeDeadband':   archTimeDeadband,
-    'leader':             leader,
-    'stackUmask':         stackUmask,
-    'eu':                 eu,
-    "enabled":            enabled,
-    'properties':         properties
-  };
+  Map<String, dynamic> toCfgJson() {
+    Map<String, dynamic> js = {
+      "name":               name,
+      "description":        description,
+      'connectorName':      connectorName,
+      'address':            address,
+      'datatype':           Datatype.toPrefix(datatype),
+      'euRangeLo':          euRangeLow,
+      'euRangeHi':          euRangeHigh,
+      'rawRangeLo':         rawRangeLow,
+      'rawRangeHi':         rawRangeHigh,
+      'providerAddresses':  providerAddresses,
+      'archMode':           archMode,
+      'archPeriod':         archPeriod,
+      'archValueDeadband':  archValueDeadband,
+      'archTimeDeadband':   archTimeDeadband,
+      'leader':             leader,
+      'stackUmask':         stackUmask,
+      'eu':                 eu,
+      "enabled":            enabled,
+      'properties':         properties
+    };
+    if(rawDatatype != null)
+      js['rawDatatype'] = Datatype.toPrefix(rawDatatype);
+    return js;
+  }
   
 
   static dynamic toDataType(String value, int datatype) {

@@ -3,8 +3,8 @@ part of opendaf;
 enum EAlarmState { AS_ACT_UNACK, AS_ACT_ACK, AS_INACT_UNACK, AS_INACT_ACK }
 
 class Alarm {
-  static const String AM_NONE = "none", AM_CHANGE = "change", AM_PERIODIC = "periodic";
-  static List<String> get archModeList => [ AM_NONE, AM_CHANGE, AM_PERIODIC ];
+  static const String AM_NONE = "none", AM_CHANGE = "change";
+  static List<String> get archModeList => [ AM_NONE, AM_CHANGE ];
   static List<String> get ackModeList => [ "manual", "auto" ];
 
   final OpenDAF _opendaf;
@@ -16,6 +16,7 @@ class Alarm {
   DateTime timestamp;
   String authority = "";
   EAlarmState state;
+  bool runtimeLoaded;
 
   // Configuration
   String name;
@@ -26,6 +27,7 @@ class Alarm {
   bool enabled = true;
 
   Map<String, dynamic> properties = new Map<String, dynamic>();
+  bool configurationLoaded;
 
   bool get isActive => state != null && state == EAlarmState.AS_ACT_UNACK || state == EAlarmState.AS_ACT_ACK;
   bool get isAcknowledged => state != null && state == EAlarmState.AS_INACT_ACK || state == EAlarmState.AS_ACT_ACK;
@@ -67,6 +69,8 @@ class Alarm {
         this.description = runtime["description"];
       if(runtime["severity"] != null)
         this.severity = runtime["severity"];
+
+      this.runtimeLoaded = true;
   }
 
     void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -89,6 +93,7 @@ class Alarm {
       if(cfg["properties"] != null)
         this.properties = cfg["properties"];
 
+      this.configurationLoaded = true;
       this.cfg_stash();
   }
 
@@ -113,7 +118,7 @@ class Alarm {
     this.archMode     = other.archMode;
     this.ackMode      = other.ackMode;
     this.enabled      = other.enabled;
-    this.properties   = other.properties;
+    this.properties   = new Map<String, dynamic>.from(other.properties);
 
     this.cfg_stash();
   }
@@ -138,7 +143,10 @@ class Alarm {
       this.enabled      == other.enabled      ;
   }
 
-  void cfg_stash() => _original = this.dup();
+  void cfg_stash() {
+    this.configurationLoaded = true;
+    _original = this.dup();
+  } 
   void cfg_revert() => this.cfg_assign(_original);
   bool cfg_changed() => !cfg_compare(_original);
   bool cfg_name_changed() => this.name != this._original?.name;
@@ -166,9 +174,6 @@ class Alarm {
       default: return null;
     }
   }
-
-  bool get configurationLoaded => this.ackMode != null || this.archMode != null || this.enabled != null;
-  bool get runtimeLoaded => this.state != null;
   
   bool get isEditable => this.original != null;
 

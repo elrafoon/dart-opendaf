@@ -70,9 +70,19 @@ class ConnectorController {
       });
   }
 
-  Future create(Connector item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(Connector item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+  Future create(Connector item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.connectors[item.name] = item;
+    _opendaf.root.eventController.add(new ConnectorsSetChanged());
+  });
+  Future update(Connector item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.connectors[item.name] = item;
+    _opendaf.root.eventController.add(new ConnectorsSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.connectors.remove(name);
+    _opendaf.root.eventController.add(new ConnectorsSetChanged());
+  });
   
   Future rename(Connector item, String newName) {
     Connector duplicate = item.dup();

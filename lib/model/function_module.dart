@@ -49,7 +49,10 @@ class FunctionModule {
   String toString() => id;
   bool get isEditable => this.original != null;
 
-  void cfg_stash()          => _original = this.dup();
+  void cfg_stash()          {
+    this.configurationLoaded = true;
+    _original = this.dup();
+  } 
   void cfg_revert()         => this.cfg_assign(_original);
   bool cfg_changed()        => !cfg_compare(_original);
   bool cfg_name_changed()   => this.name != this._original?.name;

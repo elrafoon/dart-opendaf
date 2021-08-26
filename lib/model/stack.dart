@@ -16,7 +16,7 @@ class StackModule {
     _enabled = en;
   }
   
-  StackModule(this.name, this.id, [this._enabled = true]);
+  StackModule(this.name, this.id, [this._enabled = false]);
 }
 class Stack {
   final OpenDAF _opendaf;
@@ -24,16 +24,16 @@ class Stack {
   Stack _original;
 
   String name;
-  Map<String, dynamic> description;
-  Map<String, String> defaults;
-  Map<String, dynamic> defaultPreload = {};
+  Map<String, dynamic> description = new Map<String, dynamic>();
+  Map<String, String> defaults = new Map<String, String>();
+  Map<String, dynamic> defaultPreload = new Map<String, dynamic>();
   
   Stack(this._opendaf, {this.name, this.description, this.defaults});
   Stack.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) { updateConfigurationJson(cfg); }
   Stack dup() => new Stack(_opendaf,
     name:         name,
-    description:  description,
-    defaults:     defaults
+    description:  new Map<String, dynamic>.from(description),
+    defaults:     new Map<String, dynamic>.from(defaults)
   );  
 
   Stack get original => _original;

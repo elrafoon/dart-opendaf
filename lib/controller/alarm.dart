@@ -80,9 +80,19 @@ class AlarmController {
     });
   
 
-  Future create(Alarm item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(Alarm item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+  Future create(Alarm item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.alarms[item.name] = item;
+    _opendaf.root.eventController.add(new AlarmsSetChanged());
+  });
+  Future update(Alarm item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.alarms[item.name] = item;
+    _opendaf.root.eventController.add(new AlarmsSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.alarms.remove(name);
+    _opendaf.root.eventController.add(new AlarmsSetChanged());
+  });
   
   Future rename(Alarm alm, String newName) {
     Alarm duplicate = alm.dup();

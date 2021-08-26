@@ -71,7 +71,14 @@ class OpenDAF {
       new Uri(path: "$dafmanPrefix/$prefix/$name"),
       body: JSON.encode(js),
       headers: {'Content-Type': 'application/json'}
-    );
+    ).then((http.Response response) {
+      switch(response.statusCode){
+        case 204:
+          return;
+        default:
+          return new Future.error("Cannot create $name: ${response.statusCode}");
+      }
+    });
 
   Future update(String prefix, String name, Map<String, dynamic> js) =>
     _http.put(

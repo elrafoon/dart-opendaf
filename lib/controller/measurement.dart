@@ -84,10 +84,19 @@ class MeasurementController {
       return items;
     });
   
-
-  Future create(Measurement item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future update(Measurement item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) => reload(options: _options));
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) => reload(options: _options));
+  Future create(Measurement item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
+    item.cfg_stash();
+    _opendaf.root.measurements[item.name] = item;
+    _opendaf.root.eventController.add(new MeasurementsSetChanged());
+  });
+  Future update(Measurement item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
+    _opendaf.root.measurements[item.name] = item;
+    _opendaf.root.eventController.add(new MeasurementsSetChanged());
+  });
+  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
+    _opendaf.root.measurements.remove(name);
+    _opendaf.root.eventController.add(new MeasurementsSetChanged());
+  });
   
   Future rename(Measurement item, String newName) {
     Measurement duplicate = item.dup();
