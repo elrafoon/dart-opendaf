@@ -12,14 +12,15 @@ class ProviderStackController {
   Future load({RequestOptions options}) => !_opendaf.root.providerStacksLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+    options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
 
-    List<String> _names = options.names != null && options.names.isNotEmpty ? options.names : await names();
+    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
-      RequestOptions _opt = options.dup();
+      RequestOptions _opt = _options.dup();
       _opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
       _partialOptions.add(_opt);
     }
@@ -37,6 +38,7 @@ class ProviderStackController {
   }
 
   Future<Stack> item(String name, {RequestOptions options}) {
+    options = options == null ? new RequestOptions() : options;
     options.fetchRuntime = false;
     return _opendaf.item(_prefix, name, options: options)
       .then((List<http.Response> response) {
@@ -48,6 +50,7 @@ class ProviderStackController {
   Future<List<String>> names() => _opendaf.names(_prefix);
 
   Future<Map<String, Stack>> list({RequestOptions options}) {
+    options = options == null ? new RequestOptions() : options;
     options.fetchRuntime = false;
     return _opendaf.list(_prefix, options: options)
       .then((List<http.Response> response) {

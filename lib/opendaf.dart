@@ -46,7 +46,7 @@ class OpenDAF {
   static String dafmanPrefix = "/dafman/v2";
   final http.Client _http;
 
-  static const int MAX_NAMES_IN_REQUEST = 2000;
+  static const int MAX_NAMES_IN_REQUEST = 500;
 
   Controller ctrl;
 
@@ -59,7 +59,7 @@ class OpenDAF {
 
 
   static Map<String, String> _headers = { "content-type" : "application/json; charset=UTF-8" };
-  static dynamic _json(http.Response rsp) => rsp != null ? JSON.decode(new Utf8Decoder().convert(rsp.bodyBytes)) : null;
+  static dynamic _json(http.Response rsp) => rsp != null ? JSON.decode(new Utf8Decoder().convert(rsp.bodyBytes)) : {};
 
   /* REST API Function */
   Future<List<String>> names(String prefix) =>
@@ -92,8 +92,8 @@ class OpenDAF {
 
   Future<List<http.Response>> item(String prefix, String name, {RequestOptions options}) =>
     Future.wait([
-      options.fetchConfiguration  ? _http.get("$dafmanPrefix/$prefix/$name", headers: _headers) : new Future.value({}),
-      options.fetchRuntime        ? _http.get("$opendafPrefix/$prefix/$name", headers: _headers) : new Future.value({})
+      options.fetchConfiguration  ? _http.get("$dafmanPrefix/$prefix/$name", headers: _headers) : new Future.value(),
+      options.fetchRuntime        ? _http.get("$opendafPrefix/$prefix/$name", headers: _headers) : new Future.value()
     ]);
 
   Future<List<http.Response>> list(String prefix, {RequestOptions options}) {
@@ -109,8 +109,8 @@ class OpenDAF {
     final String opt = (opts.length > 0) ? ("?" + opts.join("&")) : "";
 
     return Future.wait([
-      options.fetchConfiguration  ? _http.get("$dafmanPrefix/$prefix/$opt", headers: _headers) : new Future.value({}),
-      options.fetchRuntime        ? _http.get("$opendafPrefix/$prefix/$opt", headers: _headers) : new Future.value({})
+      options.fetchConfiguration  ? _http.get("$dafmanPrefix/$prefix/$opt", headers: _headers) : new Future.value(),
+      options.fetchRuntime        ? _http.get("$opendafPrefix/$prefix/$opt", headers: _headers) : new Future.value()
     ]);
   }
 

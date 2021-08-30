@@ -18,19 +18,20 @@ class MeasurementController {
   Future load({RequestOptions options}) => !_opendaf.root.measurementsLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+    options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
 
-    if(options.fetchConfiguration){
-      future = await _opendaf.ctrl.connector.load(options: options);
-      future = await _opendaf.ctrl.provider.load(options: options);
+    if(_options.fetchConfiguration){
+      future = await _opendaf.ctrl.connector.load(options: _options);
+      future = await _opendaf.ctrl.provider.load(options: _options);
     }
 
-    List<String> _names = options.names != null && options.names.isNotEmpty ? options.names : await names();
+    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
-      RequestOptions _opt = options.dup();
+      RequestOptions _opt = _options.dup();
       _opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
       _partialOptions.add(_opt);
     }
@@ -49,6 +50,7 @@ class MeasurementController {
 
   Future<Measurement> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)
     .then((List<http.Response> response) {
+      options = options == null ? new RequestOptions() : options;
       Measurement item = new Measurement.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
       if(options.fetchConfiguration){
         item.updateConfigurationJson(OpenDAF._json(response[0]));
@@ -61,6 +63,7 @@ class MeasurementController {
 
   Future<Map<String, Measurement>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
     .then((List<http.Response> response) {
+      options = options == null ? new RequestOptions() : options;
       Map<String, dynamic> configurations = OpenDAF._json(response[0]);
       Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
       Map<String, Measurement> items = new Map<String, Measurement>();

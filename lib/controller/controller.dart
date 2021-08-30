@@ -24,15 +24,15 @@ class Controller {
     providerStack   = new ProviderStackController(this._opendaf, this._http);
   }
 
-  Future reload() => Future.wait([
-    connectorStack.reload(),
-    connector.reload(),
-    providerStack.reload(),
-    provider.reload(),
-    command.reload(),
-    measurement.reload(),
-    alarm.reload(),
-    fm.reload(),
+  Future reload({RequestOptions options}) => Future.wait([
+    connectorStack.reload(options: options),
+    connector.reload(options: options),
+    providerStack.reload(options: options),
+    provider.reload(options: options),
+    command.reload(options: options),
+    measurement.reload(options: options),
+    alarm.reload(options: options),
+    fm.reload(options: options),
   ]);
 
 }
