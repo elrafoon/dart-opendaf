@@ -21,8 +21,15 @@ class FunctionModuleController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
-
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+    // Clear root model
+    _opendaf.root.functionModules.clear();
+    _names.forEach((name) {
+      _opendaf.root.functionModules[name] = new FunctionModule(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new FunctionModulesSetChanged());
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -31,13 +38,10 @@ class FunctionModuleController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    _opendaf.root.functionModules.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, FunctionModule> _ = await list(options: opt);
-      _opendaf.root.functionModules.addAll(_);
-      _opendaf.root.eventController.add(new FunctionModulesSetChanged());
-      });
+    });
     _opendaf.root.functionModulesLoaded= true;
 
     return future;
@@ -58,27 +62,32 @@ class FunctionModuleController {
   Future<Map<String, FunctionModule>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
     .then((List<http.Response> response) {
       options = options == null ? new RequestOptions() : options;
-      Map<String, FunctionModule> fms = new Map<String, FunctionModule>();
+      Map<String, FunctionModule> items = new Map<String, FunctionModule>();
       Map<String, dynamic> configurations = OpenDAF._json(response[0]);
       Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
 
       runtimes.keys.forEach((name) {
-        fms[name] = new FunctionModule.fromRuntimeJson(this._opendaf, runtimes[name]);
-        if(options.fetchConfiguration){
-          fms[name].updateConfigurationJson(configurations[name]);
+        // Update item in root model
+        if(_opendaf.root.functionModules.containsKey(name)){
+          _opendaf.root.functionModules[name].updateRuntimeJson(runtimes[name]);
+        } else {
+          _opendaf.root.functionModules[name] = new FunctionModule.fromRuntimeJson(this._opendaf, runtimes[name]);
         }
+
+        items[name] = _opendaf.root.functionModules[name];
       });
 
       configurations.keys.forEach((name) {
-        if(fms.containsKey(name)){
-          if(options.fetchConfiguration){
-            fms[name].updateConfigurationJson(configurations[name]);
-          }
+        // Update item in root model
+        if(_opendaf.root.functionModules.containsKey(name)){
+          _opendaf.root.functionModules[name].updateConfigurationJson(configurations[name]);
         } else {
-          fms[name] = new FunctionModule.fromCfgJson(this._opendaf, configurations[name]);
+          _opendaf.root.functionModules[name] = new FunctionModule.fromCfgJson(this._opendaf, configurations[name]);
         }
+
+        items[name] = _opendaf.root.functionModules[name];
       });
-      return fms;
+      return items;
     });
 
 

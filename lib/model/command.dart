@@ -39,7 +39,7 @@ class Command extends CommunicationObject {
       stackUmask: stackUmask, 
       eu: eu, 
       enabled: enabled, 
-      properties: properties
+      properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
     ) { this.updateStackModules(); }
 
   Command dup() => new Command(_opendaf, 
@@ -106,6 +106,8 @@ class Command extends CommunicationObject {
 
     super.updateRuntimeJson(runtime);
     if(runtime["vt"] != null)  this.vt = new VT.fromJson(runtime["vt"]);
+
+    this.runtimeLoaded = true;
   }
 
   void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -117,6 +119,8 @@ class Command extends CommunicationObject {
 
     this.updateStackModules();
     this.cfg_stash();
+
+    this.configurationLoaded = true;
   }
 
   void updateStackModules(){

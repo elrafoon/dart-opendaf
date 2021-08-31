@@ -15,8 +15,15 @@ class ProviderStackController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
-
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+    // Clear root model
+    _opendaf.root.providerStacks.clear();
+    _names.forEach((name) {
+      _opendaf.root.providerStacks[name] = new Stack(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new ProviderStacksSetChanged());
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -58,7 +65,14 @@ class ProviderStackController {
         Map<String, Stack> items = new Map<String, Stack>();
 
         configurations.keys.forEach((name) {
-          items[name] = new Stack.fromCfgJson(this._opendaf, configurations[name]);
+          // Update item in root model
+          if(_opendaf.root.providerStacks.containsKey(name)){
+            _opendaf.root.providerStacks[name].updateConfigurationJson(configurations[name]);
+          } else {
+            _opendaf.root.providerStacks[name] = new Stack.fromCfgJson(this._opendaf, configurations[name]);
+          }
+
+          items[name] = _opendaf.root.providerStacks[name];
         });
         return items;
       });

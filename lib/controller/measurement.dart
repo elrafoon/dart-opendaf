@@ -21,13 +21,20 @@ class MeasurementController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
+    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+    // Clear root model
+    _opendaf.root.measurements.clear();
+    _names.forEach((name) {
+      _opendaf.root.measurements[name] = new Measurement(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new MeasurementsSetChanged());
 
     if(_options.fetchConfiguration){
       future = await _opendaf.ctrl.connector.load(options: _options);
       future = await _opendaf.ctrl.provider.load(options: _options);
     }
 
-    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -36,13 +43,10 @@ class MeasurementController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    _opendaf.root.measurements.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, Measurement> _ = await list(options: opt);
-      _opendaf.root.measurements.addAll(_);
-      _opendaf.root.eventController.add(new MeasurementsSetChanged());
-      });
+    });
     _opendaf.root.measurementsLoaded = true;
 
     return future;
@@ -69,20 +73,25 @@ class MeasurementController {
       Map<String, Measurement> items = new Map<String, Measurement>();
 
       runtimes.keys.forEach((name) {
-        items[name] = new Measurement.fromRuntimeJson(this._opendaf, runtimes[name]);
-        if(options.fetchConfiguration){
-          items[name].updateConfigurationJson(configurations[name]);
+        // Update item in root model
+        if(_opendaf.root.measurements.containsKey(name)){
+          _opendaf.root.measurements[name].updateRuntimeJson(runtimes[name]);
+        } else {
+          _opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, runtimes[name]);
         }
+
+        items[name] = _opendaf.root.measurements[name];
       });
 
       configurations.keys.forEach((name) {
-        if(items.containsKey(name)){
-          if(options.fetchConfiguration){
-            items[name].updateConfigurationJson(configurations[name]);
-          }
+        // Update item in root model
+        if(_opendaf.root.measurements.containsKey(name)){
+          _opendaf.root.measurements[name].updateConfigurationJson(configurations[name]);
         } else {
-          items[name] = new Measurement.fromCfgJson(this._opendaf, configurations[name]);
+          _opendaf.root.measurements[name] = new Measurement.fromCfgJson(this._opendaf, configurations[name]);
         }
+
+        items[name] = _opendaf.root.measurements[name];
       });
       return items;
     });

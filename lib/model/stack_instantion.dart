@@ -11,6 +11,7 @@ class StackInstantiation {
   String wdtMeasurementName;
 
   Map<String, dynamic> properties = new Map<String, dynamic>();
+  bool configurationLoaded;
   
   StackInstantiation(this._opendaf, { this.name, this.stackName, this.vars, this.wdtMeasurementName, this.properties });
   StackInstantiation dup() => new StackInstantiation(_opendaf,
@@ -104,6 +105,8 @@ class StackInstantiation {
     if(cfg["properties"] != null)         this.properties         = cfg["properties"];
 
     this.cfg_stash();
+
+    this.configurationLoaded = true;
   }
 
   void cfg_assign(StackInstantiation other) {

@@ -21,13 +21,20 @@ class CommandController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
+    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+    // Clear root model
+    _opendaf.root.commands.clear();
+    _names.forEach((name) {
+      _opendaf.root.commands[name] = new Command(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new CommandsSetChanged());
 
     if(_options.fetchConfiguration){
       future = await _opendaf.ctrl.connector.load(options: _options);
       future = await _opendaf.ctrl.provider.load(options: _options);
     }
 
-    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -36,13 +43,10 @@ class CommandController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    _opendaf.root.commands.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, Command> _ = await list(options: opt);
-      _opendaf.root.commands.addAll(_);
-      _opendaf.root.eventController.add(new CommandsSetChanged());
-      });
+    });
     _opendaf.root.commandsLoaded = true;
 
     return future;
@@ -69,20 +73,25 @@ class CommandController {
       Map<String, Command> items = new Map<String, Command>();
 
       runtimes.keys.forEach((name) {
-        items[name] = new Command.fromRuntimeJson(this._opendaf, runtimes[name]);
-        if(options.fetchConfiguration){
-          items[name].updateConfigurationJson(configurations[name]);
+        // Update item in root model
+        if(_opendaf.root.commands.containsKey(name)){
+          _opendaf.root.commands[name].updateRuntimeJson(runtimes[name]);
+        } else {
+          _opendaf.root.commands[name] = new Command.fromRuntimeJson(this._opendaf, runtimes[name]);
         }
+
+        items[name] = _opendaf.root.commands[name];
       });
 
       configurations.keys.forEach((name) {
-        if(items.containsKey(name)){
-          if(options.fetchConfiguration){
-            items[name].updateConfigurationJson(configurations[name]);
-          }
+        // Update item in root model
+        if(_opendaf.root.commands.containsKey(name)){
+          _opendaf.root.commands[name].updateConfigurationJson(configurations[name]);
         } else {
-          items[name] = new Command.fromCfgJson(this._opendaf, configurations[name]);
+          _opendaf.root.commands[name] = new Command.fromCfgJson(this._opendaf, configurations[name]);
         }
+
+        items[name] = _opendaf.root.commands[name];
       });
       return items;
     });

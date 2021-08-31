@@ -15,8 +15,15 @@ class ConnectorStackController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
-
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+    // Clear root model
+    _opendaf.root.connectorStacks.clear();
+    _names.forEach((name) {
+      _opendaf.root.connectorStacks[name] = new Stack(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new ConnectorStacksSetChanged());
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -26,12 +33,10 @@ class ConnectorStackController {
     }
 
     // Clear root model
-    _opendaf.root.connectorStacks.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, Stack> _ = await list(options: opt);
-      _opendaf.root.connectorStacks.addAll(_);
-      _opendaf.root.eventController.add(new ConnectorStacksSetChanged());
-      });
+    });
     _opendaf.root.connectorStacksLoaded = true;
 
     return future;
@@ -58,8 +63,16 @@ class ConnectorStackController {
         Map<String, Stack> items = new Map<String, Stack>();
 
         configurations.keys.forEach((name) {
-          items[name] = new Stack.fromCfgJson(this._opendaf, configurations[name]);
+          // Update item in root model
+          if(_opendaf.root.connectorStacks.containsKey(name)){
+            _opendaf.root.connectorStacks[name].updateConfigurationJson(configurations[name]);
+          } else {
+            _opendaf.root.connectorStacks[name] = new Stack.fromCfgJson(this._opendaf, configurations[name]);
+          }
+
+          items[name] = _opendaf.root.connectorStacks[name];
         });
+
         return items;
       });
   }

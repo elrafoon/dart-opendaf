@@ -21,8 +21,15 @@ class AlarmController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
-
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+        // Clear root model
+    _opendaf.root.alarms.clear();
+    _names.forEach((name) {
+      _opendaf.root.alarms[name] = new Alarm(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new AlarmsSetChanged());
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -32,12 +39,10 @@ class AlarmController {
     }
 
     // Clear root model
-    _opendaf.root.alarms.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, Alarm> _ = await list(options: opt);
-      _opendaf.root.alarms.addAll(_);
-      _opendaf.root.eventController.add(new AlarmsSetChanged());
-      });
+    });
     _opendaf.root.alarmsLoaded = true;
 
     return future;
@@ -65,21 +70,27 @@ class AlarmController {
       Map<String, Alarm> items = new Map<String, Alarm>();
 
       runtimes.keys.forEach((name) {
-        items[name] = new Alarm.fromRuntimeJson(this._opendaf, runtimes[name]);
-        if(options.fetchConfiguration){
-          items[name].updateConfigurationJson(configurations[name]);
+        // Update item in root model
+        if(_opendaf.root.alarms.containsKey(name)){
+          _opendaf.root.alarms[name].updateRuntimeJson(runtimes[name]);
+        } else {
+          _opendaf.root.alarms[name] = new Alarm.fromRuntimeJson(this._opendaf, runtimes[name]);
         }
+
+        items[name] = _opendaf.root.alarms[name];
       });
 
       configurations.keys.forEach((name) {
-        if(items.containsKey(name)){
-          if(options.fetchConfiguration){
-            items[name].updateConfigurationJson(configurations[name]);
-          }
+        // Update item in root model
+        if(_opendaf.root.alarms.containsKey(name)){
+          _opendaf.root.alarms[name].updateConfigurationJson(configurations[name]);
         } else {
-          items[name] = new Alarm.fromCfgJson(this._opendaf, configurations[name]);
+          _opendaf.root.alarms[name] = new Alarm.fromCfgJson(this._opendaf, configurations[name]);
         }
+
+        items[name] = _opendaf.root.alarms[name];
       });
+
       return items;
     });
   

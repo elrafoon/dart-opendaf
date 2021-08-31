@@ -74,7 +74,7 @@ class OpenDAF {
     ).then((http.Response response) {
       switch(response.statusCode){
         case 204:
-          return;
+          return null;
         default:
           return new Future.error("Cannot create $name: ${response.statusCode}");
       }

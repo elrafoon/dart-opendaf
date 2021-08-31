@@ -12,6 +12,7 @@ class CommunicationObject {
   int rawDatatype;
   Range euRange;
   Range rawRange;
+  bool runtimeLoaded;
 
   // Configuration
   String description;
@@ -30,6 +31,7 @@ class CommunicationObject {
   String eu;
   bool enabled = true;
   Map<String, dynamic> properties = new Map<String, dynamic>();
+  bool configurationLoaded;
 
   List<StackModule> stackModules = [];
   

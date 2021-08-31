@@ -41,7 +41,7 @@ class Alarm {
 
   static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
 
-  Alarm(this._opendaf, {this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled, this.properties});
+  Alarm(this._opendaf, {this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled, this.properties = const {}});
 
   Alarm.empty(this._opendaf);
 

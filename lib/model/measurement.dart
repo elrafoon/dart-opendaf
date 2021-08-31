@@ -42,7 +42,7 @@ class Measurement extends CommunicationObject {
       stackUmask: stackUmask, 
       eu: eu, 
       enabled: enabled, 
-      properties: properties
+      properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
     ){ this.updateStackModules(); }
 
   Measurement dup() => new Measurement(_opendaf, 
@@ -99,6 +99,8 @@ class Measurement extends CommunicationObject {
 
     super.updateRuntimeJson(runtime);
     if(runtime["vtq"] != null)  this.vtq = new VTQ.fromJson(runtime["vtq"]);
+
+    this.runtimeLoaded = true;
   }
 
   void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -111,6 +113,8 @@ class Measurement extends CommunicationObject {
     this.updateStackModules();
 
     this.cfg_stash();
+
+    this.configurationLoaded = true;
   }
 
   void updateStackModules(){

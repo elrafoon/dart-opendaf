@@ -21,12 +21,19 @@ class ProviderController {
     options = options == null ? new RequestOptions() : options;
     this._options = options;
     Future future;
+    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+
+        // Clear root model
+    _opendaf.root.providers.clear();
+    _names.forEach((name) {
+      _opendaf.root.providers[name] = new Provider(this._opendaf, name: name);
+    });
+    _opendaf.root.eventController.add(new ProvidersSetChanged());
 
     if(_options.fetchConfiguration){
       future = await _opendaf.ctrl.providerStack.load(options: _options);
     }
 
-    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -35,13 +42,10 @@ class ProviderController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    _opendaf.root.providers.clear();
     await _partialOptions.forEach((opt) async {
+      // Return is ingored, list() function automatically updates root model
       Map<String, Provider> _ = await list(options: opt);
-      _opendaf.root.providers.addAll(_);
-      _opendaf.root.eventController.add(new ProvidersSetChanged());
-      });
+    });
     _opendaf.root.providersLoaded = true;
 
     return future;
@@ -68,7 +72,14 @@ class ProviderController {
         Map<String, Provider> items = new Map<String, Provider>();
 
         configurations.keys.forEach((name) {
-          items[name] = new Provider.fromCfgJson(this._opendaf, configurations[name]);
+          // Update item in root model
+          if(_opendaf.root.providers.containsKey(name)){
+            _opendaf.root.providers[name].updateConfigurationJson(configurations[name]);
+          } else {
+            _opendaf.root.providers[name] = new Provider.fromCfgJson(this._opendaf, configurations[name]);
+          }
+
+          items[name] = _opendaf.root.providers[name];
         });
         return items;
       });
