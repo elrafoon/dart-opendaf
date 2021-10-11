@@ -29,6 +29,8 @@ class OpenDAFWS {
   static const String WS_REQUEST_ACK_ALARMS               = "AckAlarms";
   static const String WS_REQUEST_WRITE_COMMANDS           = "WriteCommands";
 
+  static const String CS_CONNECTED = "connected", CS_DISCONNECTED = "disconnected", CS_CONNECTING = "connecting";
+
   static const String prefix = "/opendaf/ws/opendaf/";
   static const int WS_TIMEOUT = 10;
   static int RECONNECT_TIMEOUT = 0;
@@ -45,6 +47,13 @@ class OpenDAFWS {
   html.WebSocket _ws;
   String _url;
   Timer _keepAliveTimer;
+
+  String connectionStatus = CS_CONNECTING;
+  bool connectionFailed = false;
+  String get url => _url;
+  DateTime scheduledReconnect = new DateTime.now();
+
+
 
   Map<int, Completer> _completers = new Map<int, Completer>();
 
@@ -76,12 +85,14 @@ class OpenDAFWS {
   }
 
   void reconnect() {
+    connectionStatus = CS_CONNECTING;
     _url = ((html.window.location.protocol == "https:") ? "wss://" : "ws://") + html.window.location.host + prefix;
     log("Connecting to " + _url);
     _ws = new html.WebSocket(_url);
     _ws.onOpen.listen((e) {
-      log('WebSocket Connected to ' + _url);
+      connectionStatus = CS_CONNECTED;
       connected = true;
+      log('WebSocket Connected to ' + _url);
       RECONNECT_TIMEOUT = 0;
 
       /// For reconnect
@@ -164,7 +175,8 @@ class OpenDAFWS {
       });
     });
 
-    _ws.onClose.listen((e) {
+    _ws.onClose.listen((CloseEvent e) {
+      connectionStatus = CS_DISCONNECTED;
       RECONNECT_TIMEOUT = RECONNECT_TIMEOUT < 5 ? RECONNECT_TIMEOUT + 1 : 60;
       log('WebSocket disconnected from $_url, reconnecting in $RECONNECT_TIMEOUT second/s');
       if (_keepAliveTimer != null){
@@ -172,6 +184,9 @@ class OpenDAFWS {
         _keepAliveTimer = null;
       }
       connected = false;
+      connectionFailed = true;
+
+      scheduledReconnect = new DateTime.now().add(new Duration(seconds: RECONNECT_TIMEOUT));
       return futConnection = new Future.delayed(new Duration(seconds: RECONNECT_TIMEOUT), () => reconnect());
     });
   }
