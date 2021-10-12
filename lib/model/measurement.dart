@@ -129,7 +129,7 @@ class Measurement extends CommunicationObject {
 
   Map<String, dynamic> toCfgJson() {
     Map<String, dynamic> js = super.toCfgJson();
-    js['deadband'] = deadband;
+    _toJson(js, "deadband", deadband);
     return js;
   }
 

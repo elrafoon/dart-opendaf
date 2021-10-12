@@ -40,3 +40,9 @@ class Root {
   
 }
 
+_toJson(Map<String, dynamic> source, String key, dynamic value){
+  if(value == null || (value.runtimeType == String && (value as String).length == 0))
+    source[key] = null;
+  else
+    source[key] = value;
+}

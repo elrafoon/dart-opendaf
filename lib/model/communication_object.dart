@@ -176,25 +176,27 @@ class CommunicationObject {
   Map<String, dynamic> toCfgJson() {
     Map<String, dynamic> js = {
       "name":               name,
-      "description":        description,
-      'connectorName':      connectorName,
-      'address':            address,
       'datatype':           Datatype.toPrefix(datatype),
-      'euRangeLo':          euRangeLow,
-      'euRangeHi':          euRangeHigh,
-      'rawRangeLo':         rawRangeLow,
-      'rawRangeHi':         rawRangeHigh,
       'providerAddresses':  providerAddresses,
       'archMode':           archMode,
       'archPeriod':         archPeriod,
-      'archValueDeadband':  archValueDeadband,
       'archTimeDeadband':   archTimeDeadband,
-      'leader':             leader,
       'stackUmask':         stackUmask,
-      'eu':                 eu,
       "enabled":            enabled,
       'properties':         properties
     };
+
+    _toJson(js, "address", address);
+    _toJson(js, "connectorName", connectorName);
+    _toJson(js, "rawRangeLo", rawRangeLow);
+    _toJson(js, "rawRangeHi", rawRangeHigh);
+    _toJson(js, "euRangeLo", euRangeLow);
+    _toJson(js, "euRangeHi", euRangeHigh);
+    _toJson(js, "archValueDeadband", archValueDeadband);
+    _toJson(js, "eu", eu);
+    _toJson(js, "leader", leader);
+    _toJson(js, "description", description);
+
     if(rawDatatype != null)
       js['rawDatatype'] = Datatype.toPrefix(rawDatatype);
     return js;

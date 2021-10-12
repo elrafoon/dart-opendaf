@@ -152,7 +152,7 @@ class Command extends CommunicationObject {
 
   Map<String, dynamic> toCfgJson() {
     Map<String, dynamic> js = super.toCfgJson();
-    js['initialValue'] = initialValue;
+    _toJson(js, "initialValue", initialValue);
     return js;
   }
 
