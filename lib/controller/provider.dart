@@ -11,7 +11,7 @@ class ProviderController {
 
   Set<String> get properties {
     Set<String> res = new Set<String>();
-    _opendaf.root.providers.values.forEach((a) => res.addAll(a.properties.keys));
+    _opendaf.root.providers.values.forEach((a) => res.addAll(a.properties != null ? a.properties.keys : []));
     return res;
   } 
 

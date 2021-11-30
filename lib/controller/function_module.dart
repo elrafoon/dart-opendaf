@@ -11,7 +11,7 @@ class FunctionModuleController {
 
   Set<String> get properties {
     Set<String> res = new Set<String>();
-    _opendaf.root.functionModules.values.forEach((fm) => res.addAll(fm.properties.keys));
+    _opendaf.root.functionModules.values.forEach((fm) => res.addAll(fm.properties != null ? fm.properties.keys : []));
     return res;
   } 
 
