@@ -245,4 +245,34 @@ class CommunicationObject {
     || regex.hasMatch(eu ?? "")
   ;
 
+	dynamic operator[](String key) {
+		switch(key){
+			case "name": 				return this.name;
+			case "description":			return this.description;
+			case "connectorName": 		return this.connectorName;
+			case "address": 			return this.address;
+			case "datatype": 			return this.datatype;
+			case "euRangeLow": 			return this.euRangeLow;
+			case "euRangeLowNum": 		return this.euRangeLow != null ? double.parse(this.euRangeLow) : null;
+			case "euRangeHigh": 		return this.euRangeHigh;
+			case "euRangeHighNum": 		return this.euRangeHigh != null ? double.parse(this.euRangeHigh) : null;
+			case "rawDatatype": 		return this.rawDatatype;
+			case "rawRangeLow": 		return this.rawRangeLow;
+			case "rawRangeLowNum": 		return this.rawRangeLow != null ? double.parse(this.rawRangeLow) : null;
+			case "rawRangeHigh": 		return this.rawRangeHigh;
+			case "rawRangeHighNum": 	return this.rawRangeHigh != null ? double.parse(this.rawRangeHigh) : null;
+			case "providerAddresses":	return this.providerAddresses;
+			case "archMode": 			return this.archMode;
+			case "archPeriod": 			return this.archPeriod;
+			case "archValueDeadband": 	return this.archValueDeadband;
+			case "archTimeDeadband": 	return this.archTimeDeadband;
+			case "leader": 				return this.leader;
+			case "stackUmask": 			return this.stackUmask;
+			case "eu": 					return this.eu;
+			case "enabled": 			return this.enabled;
+			case "rawDataTypeDesc": 	return this.rawDataTypeDesc;
+			default:					return this.properties[key];
+		}
+	}
+
 }

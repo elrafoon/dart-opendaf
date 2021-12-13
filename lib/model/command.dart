@@ -188,4 +188,13 @@ class Command extends CommunicationObject {
 
     return _opendaf.writeCommand(this.name, Value.formatAs(value, datatype));
   }
+
+	dynamic operator[](String key) {
+		switch(key){
+			case "initialValue": 	return this.initialValue;
+			case "value": 			return this.vt?.value;
+			case "timestamp": 		return this.vt?.timestamp;
+			default: return super[key];
+		}
+	}
 }

@@ -162,4 +162,13 @@ class StackInstantiation {
     || regex.hasMatch(varsAsText ?? "")
   ;
 
+	dynamic operator[](String key) {
+		switch(key){
+			case "name": 				return this.name;
+			case "stackName": 			return this.stackName;
+			case "vars": 				return this.vars;
+			case "wdtMeasurementName": 	return this.wdtMeasurementName;
+			default:					return this.properties[key];
+		}
+	}
 }

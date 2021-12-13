@@ -186,4 +186,20 @@ class Alarm {
     || regex.hasMatch(archMode ?? "")
     || regex.hasMatch(authority ?? "")
   ;
+
+	dynamic operator[](String key) {
+		switch(key){
+			case "name": 		return this.name;
+			case "state": 		return this.state;
+			case "stateNumber": return this.stateNumber;
+			case "authority": 	return this.authority;
+			case "timestamp": 	return this.timestamp;
+			case "description":	return this.description;
+			case "severity": 	return this.severity;
+			case "archMode": 	return this.archMode;
+			case "ackMode": 	return this.ackMode;
+			case "enabled": 	return this.enabled;
+			default:			return this.properties[key];
+		}
+	}
 }

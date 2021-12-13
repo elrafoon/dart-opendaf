@@ -182,4 +182,19 @@ class FunctionModule {
     || regex.hasMatch(description ?? "")
     || regex.hasMatch(stateName ?? "")
   ;
+
+	dynamic operator[](String key) {
+		switch(key){
+			case "name": 		return this.name;
+			case "state": 		return this.state;
+			case "description":	return this.description;
+			case "enabled": 	return this.enabled;
+			case "termToKill": 	return this.termToKill;
+			case "queryTimeout":return this.queryTimeout;
+			case "respawn": 	return this.respawn;
+			case "debug": 		return this.debug;
+			case "executable": 	return this.executable;
+			default:			return this.properties[key];
+		}
+	}
 }

@@ -196,4 +196,14 @@ class Measurement extends CommunicationObject {
   }
 
   Future cancelSimulation() => _opendaf.stopMeasurementSimulation(name);
+
+	dynamic operator[](String key) {
+		switch(key){
+			case "deadband":	return this.deadband;
+			case "value": 		return this.vtq?.value;
+			case "timestamp": 	return this.vtq?.timestamp;
+			case "quality": 	return this.vtq?.quality;
+			default: return super[key];
+		}
+	}
 }
