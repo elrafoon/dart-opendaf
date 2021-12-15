@@ -255,19 +255,26 @@ class OpenDAFWS {
       }
     });
 
+	List<Future> _futures = new List<Future>();
 
-    Map<String, dynamic> unwatch = new Map<String, dynamic>();
-    unwatch["request"] = WS_REQUEST_UNWATCH_MEASUREMENTS;
-    unwatch["measurements"] = toUnwatch.toList();
+	if(toUnwatch.isNotEmpty){
+		Map<String, dynamic> unwatch = new Map<String, dynamic>();
+		unwatch["request"] = WS_REQUEST_UNWATCH_MEASUREMENTS;
+		unwatch["measurements"] = toUnwatch.toList();
 
-    Map<String, dynamic> watch = new Map<String, dynamic>();
-    watch["request"] = WS_REQUEST_WATCH_MEASUREMENTS;
-    watch["measurements"] = toWatch.toList();
+		_futures.add(_ws_request(unwatch));
+	}
 
-    return Future.wait([
-      toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
-      toWatch.isNotEmpty ? _ws_request(watch) : new Future.value(),
-    ]);
+	if(toWatch.isNotEmpty){
+		Map<String, dynamic> watch = new Map<String, dynamic>();
+		watch["request"] = WS_REQUEST_WATCH_MEASUREMENTS;
+		watch["measurements"] = toWatch.toList();
+
+		_futures.add(_ws_request(watch));
+	}
+
+	if(_futures.isNotEmpty)
+		return Future.wait(_futures);
   }
 
   Future<dynamic> _mergeCommandSet({bool forceWatchSet = false, bool forceUnwatchSet = false}) {
@@ -294,19 +301,26 @@ class OpenDAFWS {
       }
     });
 
+	List<Future> _futures = new List<Future>();
 
-    Map<String, dynamic> unwatch = new Map<String, dynamic>();
-    unwatch["request"] = WS_REQUEST_UNWATCH_COMMANDS;
-    unwatch["commands"] = toUnwatch.toList();
+	if(toUnwatch.isNotEmpty){
+    	Map<String, dynamic> unwatch = new Map<String, dynamic>();
+    	unwatch["request"] = WS_REQUEST_UNWATCH_COMMANDS;
+    	unwatch["commands"] = toUnwatch.toList();
 
-    Map<String, dynamic> watch = new Map<String, dynamic>();
-    watch["request"] = WS_REQUEST_WATCH_COMMANDS;
-    watch["commands"] = toWatch.toList();
+		_futures.add(_ws_request(unwatch));
+	}
 
-    return Future.wait([
-      toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
-      toWatch.isNotEmpty ? _ws_request(watch) : new Future.value(),
-    ]);
+	if(toWatch.isNotEmpty){
+		Map<String, dynamic> watch = new Map<String, dynamic>();
+		watch["request"] = WS_REQUEST_WATCH_COMMANDS;
+		watch["commands"] = toWatch.toList();
+
+		_futures.add(_ws_request(watch));
+	}
+
+	if(_futures.isNotEmpty)
+		return Future.wait(_futures);
   }
 
   Future<dynamic> _mergeFunctionModuleSet({bool forceWatchSet = false, bool forceUnwatchSet = false}) {
@@ -333,19 +347,26 @@ class OpenDAFWS {
       }
     });
 
+	List<Future> _futures = new List<Future>();
 
-    Map<String, dynamic> unwatch = new Map<String, dynamic>();
-    unwatch["request"] = WS_REQUEST_UNWATCH_FUNCTION_MODULES;
-    unwatch["function_modules"] = toUnwatch.toList();
+	if(toUnwatch.isNotEmpty){
+		Map<String, dynamic> unwatch = new Map<String, dynamic>();
+		unwatch["request"] = WS_REQUEST_UNWATCH_FUNCTION_MODULES;
+		unwatch["function_modules"] = toUnwatch.toList();
 
-    Map<String, dynamic> watch = new Map<String, dynamic>();
-    watch["request"] = WS_REQUEST_WATCH_FUNCTION_MODULES;
-    watch["function_modules"] = toWatch.toList();
+		_futures.add(_ws_request(unwatch));
+	}
 
-    return Future.wait([
-      toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
-      toWatch.isNotEmpty ? _ws_request(watch) : new Future.value(),
-    ]);
+	if(toWatch.isNotEmpty){
+		Map<String, dynamic> watch = new Map<String, dynamic>();
+		watch["request"] = WS_REQUEST_WATCH_FUNCTION_MODULES;
+		watch["function_modules"] = toWatch.toList();
+
+		_futures.add(_ws_request(watch));
+	}
+
+	if(_futures.isNotEmpty)
+		return Future.wait(_futures);
   }
 
   Future<dynamic> _mergeAlarmSet({bool forceWatchSet = false, bool forceUnwatchSet = false}) {
@@ -372,18 +393,26 @@ class OpenDAFWS {
       }
     });
 
-    Map<String, dynamic> unwatch = new Map<String, dynamic>();
-    unwatch["request"] = WS_REQUEST_UNWATCH_ALARMS;
-    unwatch["alarms"] = toUnwatch.toList();
+	List<Future> _futures = new List<Future>();
 
-    Map<String, dynamic> watch = new Map<String, dynamic>();
-    watch["request"] = WS_REQUEST_WATCH_ALARMS;
-    watch["alarms"] = toWatch.toList();
+	if(toUnwatch.isNotEmpty){
+		Map<String, dynamic> unwatch = new Map<String, dynamic>();
+		unwatch["request"] = WS_REQUEST_UNWATCH_ALARMS;
+		unwatch["alarms"] = toUnwatch.toList();
 
-    return Future.wait([
-      toUnwatch.isNotEmpty ? _ws_request(unwatch) : new Future.value(),
-      toWatch.isNotEmpty ? _ws_request(watch) : new Future.value(),
-    ]);
+		_futures.add(_ws_request(unwatch));
+	}
+
+	if(toWatch.isNotEmpty){
+		Map<String, dynamic> watch = new Map<String, dynamic>();
+		watch["request"] = WS_REQUEST_WATCH_ALARMS;
+		watch["alarms"] = toWatch.toList();
+
+		_futures.add(_ws_request(watch));
+	}
+
+	if(_futures.isNotEmpty)
+		return Future.wait(_futures);
   }
 
   /* Public functions */

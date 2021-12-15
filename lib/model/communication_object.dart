@@ -42,14 +42,12 @@ class CommunicationObject {
 
   String get dataTypeDesc => Datatype.getDescription(datatype);
   void set dataTypeDesc(String value) { datatype = Datatype.fromPrefix(Datatype.fromDescription(value)); }
-  List<String> get dataTypeDescriptions => Datatype.descriptions;
 
   String get rawDataTypeDesc => Datatype.getDescription(rawDatatype);
   void set rawDataTypeDesc(String value) { rawDatatype = Datatype.fromPrefix(Datatype.fromDescription(value)); }
   List<String> get archModes =>  new List.from(["none", "change", "periodic"]);
 
   String get stackUmaskToString => stackModules.where((m) => m.enabled).map((m) => m.name).join(', ');
-
   String get providerAddressesAsText {
     StringBuffer s = new StringBuffer();
     providerAddresses.forEach((k, v) {
