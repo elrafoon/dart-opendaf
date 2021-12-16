@@ -126,16 +126,18 @@ class OpenDAFWS {
             break;
 
             case WS_RESPONSE_COMMAND_UPDATE_NOTIFICATION:
-              Set<Command> c = new Set<Command>();
+            //   Set<Command> c = new Set<Command>();
+			  log("Command notification: ${data['updates'].length} updates ... ${new DateTime.now()}");
               data["updates"].forEach((_) {
                   String name = _["name"];
 
                   if(_opendaf.root.commands.containsKey(name))
                     _opendaf.root.commands[name].updateRuntimeJson(_);
                     
-                  c.add(new Command.fromRuntimeJson(this._opendaf, _));
+                //   c.add(new Command.fromRuntimeJson(this._opendaf, _));
               });
-              eventController.add(new CommandUpdateNotification()..commands = c);
+            //   eventController.add(new CommandUpdateNotification()..commands = c);
+			  log("Command notification: ${data['updates'].length} updates ... OK");
             break;
 
             case WS_RESPONSE_FUNCTION_MODULE_UPDATE_NOTIFICATION:
@@ -152,16 +154,18 @@ class OpenDAFWS {
             break;
 
             case WS_RESPONSE_MEASUREMENT_UPDATE_NOTIFICATION:
-              Set<Measurement> m = new Set<Measurement>();
+            //   Set<Measurement> m = new Set<Measurement>();
+			//   log("Measurement notification: ${data['updates'].length} updates ... ${new DateTime.now()}");
               data["updates"].forEach((_) {
                   String name = _["name"];
 
                   if(_opendaf.root.measurements.containsKey(name))
                     _opendaf.root.measurements[name].updateRuntimeJson(_);
 
-                  m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
+                //   m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
               });
-              eventController.add(new MeasurementUpdateNotification()..measurements = m);
+            //   eventController.add(new MeasurementUpdateNotification()..measurements = m);
+			//   log("Measurement notification: ${data['updates'].length} updates ... OK");
             break;
 
             default:

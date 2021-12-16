@@ -6,6 +6,10 @@ class MeasurementController {
   final OpenDAF _opendaf;
 
   RequestOptions _options;
+LoadingStatus _ls;
+  LoadingStatus get loadingStatus => _ls;
+
+  int LIMIT = 500;
 
   MeasurementController(this._opendaf, this._http);
 
@@ -18,21 +22,30 @@ class MeasurementController {
   Future load({RequestOptions options}) => !_opendaf.root.measurementsLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+	_ls = new LoadingStatus();
+	_ls.startMeasuring();
+
     options = options == null ? new RequestOptions() : options;
     this._options = options;
-    Future future;
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
 
+	_ls.logMilestone("Loaded Measurement names");
     // Clear root model
     _opendaf.root.measurements.clear();
-    _names.forEach((name) {
+    _names.take(LIMIT).forEach((name) {
       _opendaf.root.measurements[name] = new Measurement(this._opendaf, name: name);
     });
     _opendaf.root.eventController.add(new MeasurementsSetChanged());
+	_ls.logMilestone("Create empty model");
+
+	_ls.stepTarget = _names.length;
+	_ls.stepCounter = 0;
 
     if(_options.fetchConfiguration){
-      future = await _opendaf.ctrl.connector.load(options: _options);
-      future = await _opendaf.ctrl.provider.load(options: _options);
+      _ls.fut = await _opendaf.ctrl.connector.load(options: _options);
+	  	  _ls.logMilestone("Fetched connectors");
+      _ls.fut = await _opendaf.ctrl.provider.load(options: _options);
+	    _ls.logMilestone("Fetched providers");
     }
 
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
@@ -43,13 +56,20 @@ class MeasurementController {
       _partialOptions.add(_opt);
     }
 
-    await _partialOptions.forEach((opt) async {
+	_ls.logMilestone("Start loading ${_partialOptions.length} parts");
+
+	for(int j = 0; j < _partialOptions.length; j++){
       // Return is ingored, list() function automatically updates root model
-      Map<String, Measurement> _ = await list(options: opt);
-    });
+      Map<String, Measurement> _ = await list(options: _partialOptions[j]);
+	  _ls.logMilestone("Part ${j} loaded");
+
+		if(j * OpenDAF.MAX_NAMES_IN_REQUEST + OpenDAF.MAX_NAMES_IN_REQUEST >= LIMIT) 
+	  		break;
+	}
     _opendaf.root.measurementsLoaded = true;
 
-    return future;
+	_ls.endMeasuring();
+    return _ls.fut;
   }
 
   Future<Measurement> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)

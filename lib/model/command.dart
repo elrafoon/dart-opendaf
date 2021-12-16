@@ -109,6 +109,7 @@ class Command extends CommunicationObject {
     if(runtime["vt"] != null)  this.vt = new VT.fromJson(runtime["vt"]);
 
     this.runtimeLoaded = true;
+	_opendaf.ctrl.command._ls.updatesCounter++;
   }
 
   void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -122,6 +123,7 @@ class Command extends CommunicationObject {
     this.cfg_stash();
 
     this.configurationLoaded = true;
+	_opendaf.ctrl.command._ls.stepCounter++;
   }
 
   void updateStackModules(){
