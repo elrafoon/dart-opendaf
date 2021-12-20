@@ -37,6 +37,30 @@ class Controller {
 
 }
 
+abstract class GenericController {
+	final http.Client _http;
+	final OpenDAF _opendaf;
+
+	RequestOptions _options;
+
+	LoadingStatus _ls;
+	LoadingStatus get loadingStatus => _ls;
+
+	Set<String> properties = new Set<String>();
+	GenericController(this._opendaf, this._http);
+
+
+	void updateProperties(List<dynamic> objects){
+		Set<String> _properties = new Set<String>();
+		objects.forEach((a) => _properties.addAll(a.properties != null ? a.properties.keys : []));
+
+		_properties.forEach((String _) {
+			if(!this.properties.contains(_))
+				this.properties.add(_);
+		});
+	}
+}
+
 class RequestOptions {
   static const int LOAD_MODE_PARALLEL = 0, LOAD_MODE_SEQUENTIALLY = 1;
 
@@ -50,4 +74,48 @@ class RequestOptions {
   RequestOptions dup() => new RequestOptions(names: this.names, fields: this.fields, fetchRuntime: this.fetchRuntime, fetchConfiguration: this.fetchConfiguration);
 
   String toString() => "fetchRuntime: $fetchRuntime, fetchConfiguration: $fetchConfiguration, names: $names, fields: $fields";
+}
+
+class LoadingStatus {
+	static const int NOT_EMITTED = 0, LOADING = 1, LOADED = 2, FAILED = 3;
+
+	int status = LoadingStatus.NOT_EMITTED;
+
+	DateTime t_start = null;
+	DateTime t_end = null;
+
+	int objectsLoadedCounter = 0;
+	int objectsLoadTarget = 0;
+
+	int wsUpdateCounter = 0;
+	int wsUpdatesPerSec = 0;
+
+	Future fut;
+
+	List<String> log = new List<String>();
+
+	LoadingStatus(){
+		startMeasuring();
+		new Timer.periodic(new Duration(seconds: 1), (_) {
+			this.wsUpdatesPerSec = this.wsUpdateCounter;
+			this.wsUpdateCounter = 0;
+		});
+	}
+
+	void setTarget(int _target){
+		this.objectsLoadTarget = _target;
+		this.objectsLoadedCounter = 0;
+	}
+
+	void startMeasuring(){
+		t_start = new DateTime.now();
+		status = LoadingStatus.LOADING;
+	}
+
+	void endMeasuring([int _status = LoadingStatus.LOADED]){
+		t_end = new DateTime.now();
+		status = _status;
+	}
+
+	int get duration => status == LOADING ? (new DateTime.now()).difference(t_start).inMilliseconds : t_end.difference(t_start).inMilliseconds;
 }

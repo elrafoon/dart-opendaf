@@ -71,6 +71,7 @@ class Alarm {
         this.severity = runtime["severity"];
 
       this.runtimeLoaded = true;
+	  _opendaf.ctrl.alarm._ls.wsUpdateCounter++;
   }
 
     void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -95,6 +96,7 @@ class Alarm {
 
       this.configurationLoaded = true;
       this.cfg_stash();
+	  _opendaf.ctrl.alarm._ls.objectsLoadedCounter++;
   }
 
   Alarm dup() => new Alarm(_opendaf, 

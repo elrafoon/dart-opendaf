@@ -1,20 +1,17 @@
 part of opendaf;
 
-class ProviderStackController {
-  static String _prefix = "stacks/provider";
-  final http.Client _http;
-  final OpenDAF _opendaf;
+class ProviderStackController extends GenericController {
+	static String _prefix = "stacks/provider";
 
-  RequestOptions _options;
-
-  ProviderStackController(this._opendaf, this._http);
+	ProviderStackController(_opendaf, _http) : super(_opendaf, _http);
 
   Future load({RequestOptions options}) => !_opendaf.root.providerStacksLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+	_ls = new LoadingStatus();
     options = options == null ? new RequestOptions() : options;
     this._options = options;
-    Future future;
+
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
 
     // Clear root model
@@ -24,6 +21,8 @@ class ProviderStackController {
     });
     _opendaf.root.eventController.add(new ProviderStacksSetChanged());
 
+	_ls.setTarget(_names.length);
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -32,16 +31,14 @@ class ProviderStackController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    _opendaf.root.providerStacks.clear();
-    await _partialOptions.forEach((opt) async {
-      Map<String, Stack> _ = await list(options: opt);
-      _opendaf.root.providerStacks.addAll(_);
-      _opendaf.root.eventController.add(new ProviderStacksSetChanged());
-      });
-    _opendaf.root.providerStacksLoaded = true;
+	for(int j = 0; j < _partialOptions.length; j++){
+		// Return is ingored, list() function automatically updates root model
+		Map<String, Stack> _ = await list(options: _partialOptions[j]);
+	}
+	_opendaf.root.providerStacksLoaded = true;
 
-    return future;
+	_ls.endMeasuring();
+	return _ls.fut;
   }
 
   Future<Stack> item(String name, {RequestOptions options}) {

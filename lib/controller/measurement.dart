@@ -1,55 +1,49 @@
 part of opendaf;
 
-class MeasurementController {
-  static String _prefix = "measurements";
-  final http.Client _http;
-  final OpenDAF _opendaf;
+class MeasurementController extends GenericController {
+	static String _prefix = "measurements";
+	MeasurementController(_opendaf, _http) : super(_opendaf, _http);
 
-  RequestOptions _options;
+	Future load({RequestOptions options}) => !_opendaf.root.measurementsLoaded ? reload(options: options) : new Future.value(null);
 
-  MeasurementController(this._opendaf, this._http);
+	Future reload({RequestOptions options}) async {
+		_ls = new LoadingStatus();
+		options = options == null ? new RequestOptions() : options;
+		this._options = options;
 
-  Set<String> get properties {
-    Set<String> res = new Set<String>();
-    _opendaf.root.measurements.values.forEach((a) => res.addAll(a.properties != null ? a.properties.keys : []));
-    return res;
-  } 
+		List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
 
-  Future load({RequestOptions options}) => !_opendaf.root.measurementsLoaded ? reload(options: options) : new Future.value(null);
+		// Clear root model
+		_opendaf.root.measurements.clear();
+		_names.forEach((name) {
+			_opendaf.root.measurements[name] = new Measurement(this._opendaf, name: name);
+		});
+		_opendaf.root.eventController.add(new MeasurementsSetChanged());
 
-  Future reload({RequestOptions options}) async {
-    options = options == null ? new RequestOptions() : options;
-    this._options = options;
-    Future future;
-    List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+		_ls.setTarget(_names.length);
 
-    // Clear root model
-    _opendaf.root.measurements.clear();
-    _names.forEach((name) {
-      _opendaf.root.measurements[name] = new Measurement(this._opendaf, name: name);
-    });
-    _opendaf.root.eventController.add(new MeasurementsSetChanged());
+		if(_options.fetchConfiguration){
+			_ls.fut = await _opendaf.ctrl.connector.load(options: _options);
+			_ls.fut = await _opendaf.ctrl.provider.load(options: _options);
+		}
 
-    if(_options.fetchConfiguration){
-      future = await _opendaf.ctrl.connector.load(options: _options);
-      future = await _opendaf.ctrl.provider.load(options: _options);
-    }
+		List<RequestOptions> _partialOptions = new List<RequestOptions>();
+		for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
+		// Prepare sets
+		RequestOptions _opt = _options.dup();
+			_opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
+			_partialOptions.add(_opt);
+		}
 
-    List<RequestOptions> _partialOptions = new List<RequestOptions>();
-    for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
-      // Prepare sets
-      RequestOptions _opt = _options.dup();
-      _opt.names = new List<String>.from(_names.skip(i).take(OpenDAF.MAX_NAMES_IN_REQUEST));
-      _partialOptions.add(_opt);
-    }
+		for(int j = 0; j < _partialOptions.length; j++){
+			// Return is ingored, list() function automatically updates root model
+			Map<String, Measurement> _ = await list(options: _partialOptions[j]);
+			updateProperties(_.values);
+		}
+		_opendaf.root.measurementsLoaded = true;
 
-    await _partialOptions.forEach((opt) async {
-      // Return is ingored, list() function automatically updates root model
-      Map<String, Measurement> _ = await list(options: opt);
-    });
-    _opendaf.root.measurementsLoaded = true;
-
-    return future;
+		_ls.endMeasuring();
+		return _ls.fut;
   }
 
   Future<Measurement> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)

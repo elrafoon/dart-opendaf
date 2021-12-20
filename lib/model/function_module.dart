@@ -67,6 +67,7 @@ class FunctionModule {
       this.state = stateFromString(runtime["state"]);
 
     this.runtimeLoaded = true;
+	_opendaf.ctrl.fm._ls.wsUpdateCounter++;
   }
 
   void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -85,6 +86,7 @@ class FunctionModule {
 
       this.configurationLoaded = true;
       this.cfg_stash();
+	  _opendaf.ctrl.fm._ls.objectsLoadedCounter++;
   }
 
   FunctionModule dup() => new FunctionModule(_opendaf, 

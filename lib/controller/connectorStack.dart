@@ -1,20 +1,17 @@
 part of opendaf;
 
-class ConnectorStackController {
-  static String _prefix = "stacks/connector";
-  final http.Client _http;
-  final OpenDAF _opendaf;
-
-  RequestOptions _options;
-
-  ConnectorStackController(this._opendaf, this._http);
+class ConnectorStackController extends GenericController {
+	static String _prefix = "stacks/connector";
+	
+	ConnectorStackController(_opendaf, _http) : super(_opendaf, _http);
 
   Future load({RequestOptions options}) => !_opendaf.root.connectorStacksLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+	_ls = new LoadingStatus();
     options = options == null ? new RequestOptions() : options;
     this._options = options;
-    Future future;
+
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
 
     // Clear root model
@@ -24,6 +21,8 @@ class ConnectorStackController {
     });
     _opendaf.root.eventController.add(new ConnectorStacksSetChanged());
 
+	_ls.setTarget(_names.length);
+
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {
       // Prepare sets
@@ -32,14 +31,14 @@ class ConnectorStackController {
       _partialOptions.add(_opt);
     }
 
-    // Clear root model
-    await _partialOptions.forEach((opt) async {
-      // Return is ingored, list() function automatically updates root model
-      Map<String, Stack> _ = await list(options: opt);
-    });
-    _opendaf.root.connectorStacksLoaded = true;
+	for(int j = 0; j < _partialOptions.length; j++){
+		// Return is ingored, list() function automatically updates root model
+		Map<String, Stack> _ = await list(options: _partialOptions[j]);
+	}
+	_opendaf.root.connectorStacksLoaded = true;
 
-    return future;
+	_ls.endMeasuring();
+	return _ls.fut;
   }
 
   Future<Stack> item(String name, {RequestOptions options}) {

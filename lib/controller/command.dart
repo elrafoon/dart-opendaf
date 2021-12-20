@@ -1,26 +1,17 @@
 part of opendaf;
 
-class CommandController {
-  static String _prefix = "commands";
-  final http.Client _http;
-  final OpenDAF _opendaf;
+class CommandController extends GenericController {
+	static String _prefix = "commands";
 
-  RequestOptions _options;
-
-  CommandController(this._opendaf, this._http);
-
-  Set<String> get properties {
-    Set<String> res = new Set<String>();
-    _opendaf.root.commands.values.forEach((a) => res.addAll(a.properties != null ? a.properties.keys : []));
-    return res;
-  } 
+	CommandController(_opendaf, _http) : super(_opendaf, _http);
 
   Future load({RequestOptions options}) => !_opendaf.root.commandsLoaded ? reload(options: options) : new Future.value(null);
 
   Future reload({RequestOptions options}) async {
+	_ls = new LoadingStatus();
     options = options == null ? new RequestOptions() : options;
     this._options = options;
-    Future future;
+
     List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
 
     // Clear root model
@@ -30,9 +21,11 @@ class CommandController {
     });
     _opendaf.root.eventController.add(new CommandsSetChanged());
 
+	_ls.setTarget(_names.length);
+
     if(_options.fetchConfiguration){
-      future = await _opendaf.ctrl.connector.load(options: _options);
-      future = await _opendaf.ctrl.provider.load(options: _options);
+      _ls.fut = await _opendaf.ctrl.connector.load(options: _options);
+      _ls.fut = await _opendaf.ctrl.provider.load(options: _options);
     }
 
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
@@ -43,13 +36,15 @@ class CommandController {
       _partialOptions.add(_opt);
     }
 
-    await _partialOptions.forEach((opt) async {
-      // Return is ingored, list() function automatically updates root model
-      Map<String, Command> _ = await list(options: opt);
-    });
-    _opendaf.root.commandsLoaded = true;
+	for(int j = 0; j < _partialOptions.length; j++){
+		// Return is ingored, list() function automatically updates root model
+		Map<String, Command> _ = await list(options: _partialOptions[j]);
+		updateProperties(_.values);
+	}
+	_opendaf.root.commandsLoaded = true;
 
-    return future;
+	_ls.endMeasuring();
+	return _ls.fut;
   }
 
   Future<Command> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)

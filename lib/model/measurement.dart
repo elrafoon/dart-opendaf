@@ -101,6 +101,7 @@ class Measurement extends CommunicationObject {
     if(runtime["vtq"] != null)  this.vtq = new VTQ.fromJson(runtime["vtq"]);
 
     this.runtimeLoaded = true;
+	_opendaf.ctrl.measurement._ls.wsUpdateCounter++;
   }
 
   void updateConfigurationJson(Map<String, dynamic> cfg){
@@ -115,6 +116,7 @@ class Measurement extends CommunicationObject {
     this.cfg_stash();
 
     this.configurationLoaded = true;
+	_opendaf.ctrl.measurement._ls.objectsLoadedCounter++;
   }
 
   void updateStackModules(){
