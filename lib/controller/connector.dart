@@ -23,8 +23,9 @@ class ConnectorController extends GenericController {
 
 	_ls.setTarget(_names.length);
 
-    // Wait for stacks
-    await _opendaf.ctrl.connectorStack.load(options: options);
+	if(_options.fetchConfiguration){
+		_ls.fut = await _opendaf.ctrl.connectorStack.load(options: options);
+	}
 
     List<RequestOptions> _partialOptions = new List<RequestOptions>();
     for (int i = 0; i < _names.length; i += OpenDAF.MAX_NAMES_IN_REQUEST) {

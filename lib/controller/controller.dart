@@ -43,7 +43,7 @@ abstract class GenericController {
 
 	RequestOptions _options;
 
-	LoadingStatus _ls;
+	LoadingStatus _ls = new LoadingStatus();
 	LoadingStatus get loadingStatus => _ls;
 
 	Set<String> properties = new Set<String>();
