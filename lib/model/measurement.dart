@@ -137,6 +137,11 @@ class Measurement extends CommunicationObject {
 
 
   /* --- Helpers --- */  
+  dynamic get naiveValue => (vtq == null || isBad) ? null : vtq?.value;
+  bool get isGood => (vtq?.quality == null) ? null : Quality.isGood(vtq?.quality);
+  bool get isBad => (vtq?.quality == null) ? null : Quality.isBad(vtq?.quality);
+  bool get isUncertain => (vtq?.quality == null) ? null : Quality.isUncertain(vtq?.quality);
+
   String get smartValue => (vtq?.value == null) ? "--" : vtq.value;
   String get smartQuality => (vtq?.quality == null) ? "--" : vtq.quality.toRadixString(16).toUpperCase().padLeft(2, '0');
   String get smartQualityDesc => (vtq?.quality == null) ? "" : Quality.getDescription(vtq.quality);
