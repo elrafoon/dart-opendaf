@@ -26,6 +26,7 @@ part 'model/connector.dart';
 part 'model/provider.dart';
 part 'model/stack.dart';
 part 'model/stack_instantion.dart';
+part 'model/descriptor.dart';
 
 part 'controller/alarm.dart';
 part 'controller/measurement.dart';
