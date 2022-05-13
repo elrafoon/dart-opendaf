@@ -1,15 +1,15 @@
 part of opendaf;
 
 class Descriptor {
-	final Map<String, String> measurements;
-	final Map<String, String> commands;
-	final Map<String, String> alarms;
+	Map<String, String> measurements = new Map<String, String>();
+	Map<String, String> commands = new Map<String, String>();
+	Map<String, String> alarms = new Map<String, String>();
 
 	Descriptor([this.measurements, this.commands, this.alarms]);
 
 	Descriptor.fromJson(Map<String, dynamic> js) :
-		measurements	= js["measurements"],
-		commands		= js["commands"],
-		alarms			= js["alarms"]
+		measurements	= new Map<String, String>.from(js["measurements"] ?? {}),
+		commands		= new Map<String, String>.from(js["commands"] ?? {}),
+		alarms			= new Map<String, String>.from(js["alarms"] ?? {})
 	;	
 }
