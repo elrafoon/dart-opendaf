@@ -159,38 +159,55 @@ class Command extends CommunicationObject {
     return js;
   }
 
-  Future write(dynamic value) {
-    if(datatype == null || datatype == Datatype.DT_EMPTY)
-      return new Future.error("Can't write null command!");
-    
-    switch(datatype) {
-      case Datatype.DT_BINARY:
-        if(!(value is bool))
-          return new Future.error("Write binary command argument must be bool");
-        break;
-        
-      case Datatype.DT_QUATERNARY:
-      case Datatype.DT_INTEGER:
-      case Datatype.DT_LONG:
-        if(!(value is int))
-          return new Future.error("Write quaternary, integer and long command argument must be int");
-        break;
-        
-      case Datatype.DT_FLOAT:
-      case Datatype.DT_DOUBLE:
-        if(!(value is num))
-          return new Future.error("Write quaternary, integer and long command argument must be number");
-        break;
-        
-      case Datatype.DT_STRING:
-        break;
-        
-      default:
-        return new Future.error("Unknown command data type '${datatype}'");
-    }
+	String validateWrite(dynamic value){
+		if(datatype == null || datatype == Datatype.DT_EMPTY)
+			return "Can't write null command!";
 
-    return _opendaf.writeCommand(this.name, Value.formatAs(value, datatype));
-  }
+		switch(datatype) {
+			case Datatype.DT_BINARY:
+				if(!(value is bool))
+					return "Write binary command argument must be bool";
+				break;
+			
+			case Datatype.DT_QUATERNARY:
+			case Datatype.DT_INTEGER:
+			case Datatype.DT_LONG:
+				if(!(value is int))
+					return "Write quaternary, integer and long command argument must be int";
+				break;
+			
+			case Datatype.DT_FLOAT:
+			case Datatype.DT_DOUBLE:
+				if(!(value is num))
+					return "Write quaternary, integer and long command argument must be number";
+				break;
+			
+			case Datatype.DT_STRING:
+				break;
+			
+			default:
+				return "Unknown command data type '${datatype}'";
+		}
+		return null;
+	}
+
+	Future write(dynamic value) {
+		String err = validateWrite(value);
+
+		if(err != null)
+			return new Future.error(err);
+
+		return _opendaf.writeCommand(this.name, Value.formatAs(value, datatype));
+	}
+
+	Future writeWs(dynamic value, OpenDAFWS _ws) {
+		String err = validateWrite(value);
+
+		if(err != null)
+			return new Future.error(err);
+
+		return _ws.writeCommand(this.name, Value.formatAs(value, datatype));
+	}
 
 	dynamic operator[](String key) {
 		switch(key){
