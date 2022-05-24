@@ -19,7 +19,7 @@ class ProviderAddressesException extends ModelException {
   String toString() => _msg;
 }
 
-class Root {
+class OpendafRoot {
   final Map<String, Measurement> measurements = new SplayTreeMap<String, Measurement>();
   final Map<String, Command> commands = new SplayTreeMap<String, Command>();
   final Map<String, Connector> connectors = new SplayTreeMap<String, Connector>();
@@ -34,7 +34,7 @@ class Root {
   final StreamController<StreamEvent> eventController = new StreamController<StreamEvent>.broadcast();
   Stream<StreamEvent> eventStream;
   
-  Root() {
+  OpendafRoot() {
     eventStream = eventController.stream;
   }
   

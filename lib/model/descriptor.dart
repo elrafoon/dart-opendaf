@@ -11,5 +11,5 @@ class Descriptor {
 		measurements	= new Map<String, String>.from(js["measurements"] ?? {}),
 		commands		= new Map<String, String>.from(js["commands"] ?? {}),
 		alarms			= new Map<String, String>.from(js["alarms"] ?? {})
-	;	
+	;
 }

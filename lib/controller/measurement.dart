@@ -44,70 +44,69 @@ class MeasurementController extends GenericController {
 
 		_ls.endMeasuring();
 		return _ls.fut;
-  }
+	}
 
-  Future<Measurement> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)
-    .then((List<http.Response> response) {
-      options = options == null ? new RequestOptions() : options;
-      Measurement item = new Measurement.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
-      if(options.fetchConfiguration){
-        item.updateConfigurationJson(OpenDAF._json(response[0]));
-      }
-      return item;
-    });
-  
+	Future<Measurement> item(String name, {RequestOptions options}) => _opendaf.item(_prefix, name, options: options)
+		.then((List<http.Response> response) {
+			options = options == null ? new RequestOptions() : options;
+			Measurement item = new Measurement.fromRuntimeJson(this._opendaf, OpenDAF._json(response[1]));
+			if(options.fetchConfiguration){
+				item.updateConfigurationJson(OpenDAF._json(response[0]));
+			}
+			return item;
+		});
 
-  Future<List<String>> names() => _opendaf.names(_prefix);
 
-  Future<Map<String, Measurement>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
-    .then((List<http.Response> response) {
-      options = options == null ? new RequestOptions() : options;
-      Map<String, dynamic> configurations = OpenDAF._json(response[0]);
-      Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
-      Map<String, Measurement> items = new Map<String, Measurement>();
+	Future<List<String>> names() => _opendaf.dafman.names(_prefix);
 
-      runtimes.keys.forEach((name) {
-        // Update item in root model
-        if(_opendaf.root.measurements.containsKey(name)){
-          _opendaf.root.measurements[name].updateRuntimeJson(runtimes[name]);
-        } else {
-          _opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, runtimes[name]);
-        }
+	Future<Map<String, Measurement>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
+		.then((List<http.Response> response) {
+			options = options == null ? new RequestOptions() : options;
+			Map<String, dynamic> configurations = OpenDAF._json(response[0]);
+			Map<String, dynamic> runtimes = OpenDAF._json(response[1]);
+			Map<String, Measurement> items = new Map<String, Measurement>();
 
-        items[name] = _opendaf.root.measurements[name];
-      });
+			runtimes.keys.forEach((name) {
+				// Update item in root model
+				if(_opendaf.root.measurements.containsKey(name)){
+					_opendaf.root.measurements[name].updateRuntimeJson(runtimes[name]);
+				} else {
+					_opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, runtimes[name]);
+				}
 
-      configurations.keys.forEach((name) {
-        // Update item in root model
-        if(_opendaf.root.measurements.containsKey(name)){
-          _opendaf.root.measurements[name].updateConfigurationJson(configurations[name]);
-        } else {
-          _opendaf.root.measurements[name] = new Measurement.fromCfgJson(this._opendaf, configurations[name]);
-        }
+				items[name] = _opendaf.root.measurements[name];
+			});
 
-        items[name] = _opendaf.root.measurements[name];
-      });
-      return items;
-    });
-  
-  Future create(Measurement item) => _opendaf.create(_prefix, item.name, item.toCfgJson()).then((_) {
-    item.cfg_stash();
-    _opendaf.root.measurements[item.name] = item;
-    _opendaf.root.eventController.add(new MeasurementsSetChanged());
-  });
-  Future update(Measurement item) => _opendaf.update(_prefix, item.name, item.toCfgJson()).then((_) {
-    _opendaf.root.measurements[item.name] = item;
-    _opendaf.root.eventController.add(new MeasurementsSetChanged());
-  });
-  Future delete(String name) => _opendaf.delete(_prefix, name).then((_) {
-    _opendaf.root.measurements.remove(name);
-    _opendaf.root.eventController.add(new MeasurementsSetChanged());
-  });
-  
-  Future rename(Measurement item, String newName) {
-    Measurement duplicate = item.dup();
-    duplicate.name = newName;
-    return create(duplicate).then((_) => delete(item.name));
-  }
-}
+			configurations.keys.forEach((name) {
+				// Update item in root model
+				if(_opendaf.root.measurements.containsKey(name)){
+					_opendaf.root.measurements[name].updateConfigurationJson(configurations[name]);
+				} else {
+					_opendaf.root.measurements[name] = new Measurement.fromCfgJson(this._opendaf, configurations[name]);
+				}
+
+				items[name] = _opendaf.root.measurements[name];
+			});
+			return items;
+		});
+
+	Future create(Measurement item) => _opendaf.dafman.create(_prefix, item.name, item.toCfgJson()).then((_) {
+		item.cfg_stash();
+		_opendaf.root.measurements[item.name] = item;
+		_opendaf.root.eventController.add(new MeasurementsSetChanged());
+	});
+	Future update(Measurement item) => _opendaf.dafman.update(_prefix, item.name, item.toCfgJson()).then((_) {
+		_opendaf.root.measurements[item.name] = item;
+		_opendaf.root.eventController.add(new MeasurementsSetChanged());
+	});
+	Future delete(String name) => _opendaf.dafman.delete(_prefix, name).then((_) {
+		_opendaf.root.measurements.remove(name);
+		_opendaf.root.eventController.add(new MeasurementsSetChanged());
+	});
 	
+	Future rename(Measurement item, String newName) {
+		Measurement duplicate = item.dup();
+		duplicate.name = newName;
+		return create(duplicate).then((_) => delete(item.name));
+	}
+}
