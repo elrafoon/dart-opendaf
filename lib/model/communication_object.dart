@@ -77,6 +77,8 @@ class CommunicationObject {
 		if(runtime["raw-datatype"] != null)   this.rawDatatype  = Datatype.fromPrefix(runtime["raw-datatype"]);
 		if(runtime["eu-range"] != null)       this.euRange      = new Range.fromJson(runtime["eu-range"]);
 		if(runtime["raw-range"] != null)      this.rawRange     = new Range.fromJson(runtime["raw-range"]);
+		if(runtime["eu"] != null)             this.eu           = runtime["eu"];
+		if(runtime["description"] != null)    this.description  = runtime["description"];
 	}
 
 	void updateConfigurationJson(Map<String, dynamic> cfg){
