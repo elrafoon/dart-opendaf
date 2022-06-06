@@ -64,7 +64,7 @@ class OpenDAF {
 
 	OpenDAF(this._http) {
 		// Configuration
-		root	= new OpendafRoot();
+		root	= new OpendafRoot(this);
 		ctrl	= new OpendafController(this, this._http);
 
 		// Communication
@@ -72,6 +72,10 @@ class OpenDAF {
 		dafman	= new OpendafDafman(this, this._http);
 		archive	= new OpendafArchive(this, this._http);
 		ws		= new OpendafWS(this, this._http);
+	}
+
+	void log(String message, [String origin]){
+		print("[OpenDAF${origin == null ? '' : '.' + origin}]: $message");
 	}
 
 	void useWebSocket(){

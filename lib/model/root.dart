@@ -13,36 +13,73 @@ class AlarmsSetChanged extends StreamEvent{ }
 
 class ModelException implements Exception {}
 class ProviderAddressesException extends ModelException {
-  String _msg;
-  
-  ProviderAddressesException(this._msg);
-  String toString() => _msg;
+	String _msg;
+	
+	ProviderAddressesException(this._msg);
+	String toString() => _msg;
 }
 
 class OpendafRoot {
-  final Map<String, Measurement> measurements = new SplayTreeMap<String, Measurement>();
-  final Map<String, Command> commands = new SplayTreeMap<String, Command>();
-  final Map<String, Connector> connectors = new SplayTreeMap<String, Connector>();
-  final Map<String, Provider> providers = new SplayTreeMap<String, Provider>();
-  final Map<String, Stack> connectorStacks = new SplayTreeMap<String, Stack>();
-  final Map<String, Stack> providerStacks = new SplayTreeMap<String, Stack>();
-  final Map<String, FunctionModule> functionModules = new SplayTreeMap<String, FunctionModule>();
-  final Map<String, Alarm> alarms = new SplayTreeMap<String, Alarm>();
+	final OpenDAF _opendaf;
 
-  bool measurementsLoaded, commandsLoaded, functionModulesLoaded, alarmsLoaded, connectorsLoaded, providersLoaded, connectorStacksLoaded, providerStacksLoaded;
+	final Map<String, Measurement> measurements = new SplayTreeMap<String, Measurement>();
+	final Map<String, Command> commands = new SplayTreeMap<String, Command>();
+	final Map<String, Connector> connectors = new SplayTreeMap<String, Connector>();
+	final Map<String, Provider> providers = new SplayTreeMap<String, Provider>();
+	final Map<String, Stack> connectorStacks = new SplayTreeMap<String, Stack>();
+	final Map<String, Stack> providerStacks = new SplayTreeMap<String, Stack>();
+	final Map<String, FunctionModule> functionModules = new SplayTreeMap<String, FunctionModule>();
+	final Map<String, Alarm> alarms = new SplayTreeMap<String, Alarm>();
 
-  final StreamController<StreamEvent> eventController = new StreamController<StreamEvent>.broadcast();
-  Stream<StreamEvent> eventStream;
-  
-  OpendafRoot() {
-    eventStream = eventController.stream;
-  }
-  
+	bool measurementsLoaded, commandsLoaded, functionModulesLoaded, alarmsLoaded, connectorsLoaded, providersLoaded, connectorStacksLoaded, providerStacksLoaded;
+
+	final StreamController<StreamEvent> eventController = new StreamController<StreamEvent>.broadcast();
+	Stream<StreamEvent> eventStream;
+
+	OpendafRoot(this._opendaf) {
+		eventStream = eventController.stream;
+	}
+
+	Measurement getMeasurement(String name, { bool autocreate = false }){
+		if(measurements[name] == null){
+			_opendaf.log("Measurement $name does not exists" + (autocreate ? ", auto-creating one." : ''));
+			if(autocreate)
+				measurements[name] = new Measurement(_opendaf, name: name);
+		}
+		return measurements[name];
+	}
+	Measurement getMeasurementFromDesc(String key, Descriptor desc, { bool autocreate = true }){
+		return getMeasurement(desc.measurements[key], autocreate: autocreate);
+	}
+
+	Command getCommand(String name, { bool autocreate = false }){
+		if(commands[name] == null){
+			_opendaf.log("Command $name does not exists" + (autocreate ? ", auto-creating one." : ''));
+			if(autocreate)
+				commands[name] = new Command(_opendaf, name: name);
+		}
+		return commands[name];
+	}
+	Command getCommandFromDesc(String key, Descriptor desc, { bool autocreate = true }){
+		return getCommand(desc.commands[key], autocreate: autocreate);
+	}
+
+	Alarm getAlarm(String name, { bool autocreate = false }){
+		if(alarms[name] == null){
+			_opendaf.log("Alarm $name does not exists" + (autocreate ? ", auto-creating one." : ''));
+			if(autocreate)
+				alarms[name] = new Alarm(_opendaf, name: name);
+		}
+		return alarms[name];
+	}
+	Alarm getAlarmFromDesc(String key, Descriptor desc, { bool autocreate = true }){
+		return getAlarm(desc.alarms[key], autocreate: autocreate);
+	}
 }
 
 _toJson(Map<String, dynamic> source, String key, dynamic value){
-  if(value == null || (value.runtimeType == String && (value as String).length == 0))
-    source[key] = null;
-  else
-    source[key] = value;
+	if(value == null || (value.runtimeType == String && (value as String).length == 0))
+		source[key] = null;
+	else
+		source[key] = value;
 }
