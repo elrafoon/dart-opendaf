@@ -78,9 +78,10 @@ class OpenDAF {
 		print("[OpenDAF${origin == null ? '' : '.' + origin}]: $message");
 	}
 
-	void useWebSocket(){
+	void useWebSocket({bool autoload}){
 		DEFAULT_VIA_WS = true;
 
+		ws.autoload = autoload;
 		ws.reconnect();
 	}
 

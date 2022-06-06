@@ -46,6 +46,7 @@ class OpendafWS {
 	Stream<StreamEvent> eventStream;
 	Future futConnection;
 	bool connected = false;
+	bool autoload = false;
 	html.WebSocket _ws;
 	String _url;
 	Timer _keepAliveTimer;
@@ -76,7 +77,7 @@ class OpendafWS {
 	}
 
 	void log(String message){
-		print("[OpenDAF-WS]: $message");
+		_opendaf.log(message, "ws");
 	}
 
 	void heartbeat() {
@@ -95,6 +96,9 @@ class OpendafWS {
 			connected = true;
 			log('WebSocket Connected to ' + _url);
 			RECONNECT_TIMEOUT = 0;
+
+			if(this.autoload)
+				this.readDatabase();
 
 			/// For reconnect
 			_mergeAlarmSet(forceWatchSet: true);
