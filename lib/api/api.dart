@@ -8,6 +8,11 @@ class OpendafApi {
 
 	OpendafApi(this._opendaf, this._http);
 
+	Future<http.Response> names(String path, {RequestOptions options}) {
+		options.fields = ["name"];
+		return this.list(path, options: options);
+	}
+
 	Future<http.Response> item(String path, String name, {RequestOptions options}) =>
 		_http.get("$prefix/$path/$name", headers: OpenDAF._headers);
 

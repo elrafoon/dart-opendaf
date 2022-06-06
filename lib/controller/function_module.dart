@@ -12,7 +12,7 @@ class FunctionModuleController extends GenericController {
 		options = options == null ? new RequestOptions() : options;
 		this._options = options;
 
-		List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names();
+		List<String> _names = _options.names != null && _options.names.isNotEmpty ? _options.names : await names(_options);
 
 		// Clear root model
 		_opendaf.root.functionModules.clear();
@@ -52,7 +52,7 @@ class FunctionModuleController extends GenericController {
 			return item;
 		});
 
-	Future<List<String>> names() => _opendaf.dafman.names(_prefix);
+	Future<List<String>> names(RequestOptions options) => options.fetchConfiguration ? _opendaf.dafman.names(_prefix) : _opendaf.api.names(_prefix);
 
 	Future<Map<String, FunctionModule>> list({RequestOptions options}) => _opendaf.list(_prefix, options: options)
 		.then((List<http.Response> response) {
