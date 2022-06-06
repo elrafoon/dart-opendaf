@@ -190,7 +190,11 @@ class Command extends CommunicationObject {
 		return null;
 	}
 
-	Future write(dynamic value) {
+	Future write(dynamic value){
+		return _opendaf.DEFAULT_VIA_WS ? write_ws(value) : write_api(value);
+	}
+
+	Future write_api(dynamic value) {
 		String err = validateWrite(value);
 
 		if(err != null)

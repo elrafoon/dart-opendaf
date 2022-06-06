@@ -3,6 +3,7 @@ part of opendaf;
 enum EAlarmState { AS_ACT_UNACK, AS_ACT_ACK, AS_INACT_UNACK, AS_INACT_ACK }
 
 class Alarm {
+	static const String AOP_ACTIVATE = "activate", AOP_DEACTIVATE = "deactivate", AOP_ACKNOWLEDGE = "acknowledge";
 	static const String AM_NONE = "none", AM_CHANGE = "change";
 	static List<String> get archModeList => [ AM_NONE, AM_CHANGE ];
 	static List<String> get ackModeList => [ "manual", "auto" ];
@@ -163,9 +164,18 @@ class Alarm {
 		"properties": properties
 	};
 
-	Future acknowledge() => _opendaf.ctrl.alarm.acknowledge(name);
-	Future activate() => _opendaf.ctrl.alarm.activate(name);
-	Future deactivate() => _opendaf.ctrl.alarm.deactivate(name);
+
+	Future acknowledge()		=> _opendaf.DEFAULT_VIA_WS ? acknowledge_ws() : acknowledge_api();
+	Future acknowledge_api()	=> _opendaf.api.alarmOperation(this.name, Alarm.AOP_ACKNOWLEDGE);
+	Future acknowledge_ws()		=> _opendaf.ws.ackAlarm(this.name);
+
+	Future activate()			=>_opendaf.DEFAULT_VIA_WS ? activate_ws() : activate_api();
+	Future activate_api()		=> _opendaf.api.alarmOperation(this.name, Alarm.AOP_ACTIVATE);
+	Future activate_ws()		=> _opendaf.ws.operateAlarm(this.name, Alarm.AOP_ACTIVATE);
+
+	Future deactivate()			=> _opendaf.DEFAULT_VIA_WS ? deactivate_ws() : deactivate_api();
+	Future deactivate_api()		=> _opendaf.api.alarmOperation(this.name, Alarm.AOP_DEACTIVATE);
+	Future deactivate_ws()		=> _opendaf.ws.operateAlarm(this.name, Alarm.AOP_DEACTIVATE);
 
 	static EAlarmState decodeState(String stateName) {
 		switch(stateName) {

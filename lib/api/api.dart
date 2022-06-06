@@ -123,7 +123,7 @@ class OpendafApi {
 		_http.put(new Uri(path: "$prefix/commands/$name", queryParameters : {"value" : valueWithPrefix}));
 
 	/* ----- ALARMS ----- */
-	Future alarmOperation(String name, String op, String authority) =>
+	Future alarmOperation(String name, String op, { String authority = "webdaf" }) =>
 		_http.post("$prefix/alarms/$name/$op?authority=$authority");
 
 	/* ----- MANAGEMENT ----- */

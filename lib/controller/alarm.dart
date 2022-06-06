@@ -106,10 +106,5 @@ class AlarmController extends GenericController {
 		duplicate.name = newName;
 		return create(duplicate).then((_) => delete(alm.name));
 	}
-
-	Future acknowledge(String name, {String authority = "webdaf"}) => _opendaf.api.alarmOperation(name, "acknowledge", authority);
-	Future activate(String name, {String authority = "webdaf"}) => _opendaf.api.alarmOperation(name, "activate", authority);
-	Future deactivate(String name, {String authority = "webdaf"}) => _opendaf.api.alarmOperation(name, "deactivate", authority);
-
 }
 	

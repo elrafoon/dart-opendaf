@@ -49,7 +49,6 @@ class OpenDAF {
 	static Map<String, String> _headers = { "Content-Type" : "application/json; charset=UTF-8" };
 	static const int MAX_NAMES_IN_REQUEST = 500;
 	static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
-	static bool DEFAULT_VIA_WS = false;
 
 	final http.Client _http;
 
@@ -61,6 +60,7 @@ class OpenDAF {
 	OpendafDafman dafman;
 	OpendafArchive archive;
 	OpendafWS ws;
+	bool DEFAULT_VIA_WS = false;
 
 	OpenDAF(this._http) {
 		// Configuration

@@ -9,24 +9,27 @@ class FunctionModuleUpdateNotification extends StreamEvent{ Set<FunctionModule> 
 
 class OpendafWS {
 	/* ----- CONSTANTS ----- */
-	static const String WS_RESPONSE                                     = "Response";
-	static const String WS_RESPONSE_MEASUREMENT_UPDATE_NOTIFICATION     = "MeasurementUpdateNotification";
-	static const String WS_RESPONSE_ALARMS_STATE_CHANGE_NOTIFICATION    = "AlarmStateChangeNotification";
-	static const String WS_RESPONSE_FUNCTION_MODULE_UPDATE_NOTIFICATION = "FunctionModuleUpdateNotification";
-	static const String WS_RESPONSE_COMMAND_UPDATE_NOTIFICATION         = "CommandUpdateNotification";
+	static const String WS_RESPONSE										= "Response";
+	static const String WS_RESPONSE_MEASUREMENT_UPDATE_NOTIFICATION		= "MeasurementUpdateNotification";
+	static const String WS_RESPONSE_COMMAND_UPDATE_NOTIFICATION			= "CommandUpdateNotification";
+	static const String WS_RESPONSE_FUNCTION_MODULE_UPDATE_NOTIFICATION	= "FunctionModuleUpdateNotification";
+	static const String WS_RESPONSE_ALARMS_STATE_CHANGE_NOTIFICATION	= "AlarmStateChangeNotification";
+	static const String WS_RESPONSE_DATABASE_RESPONSE					= "DatabaseResponse";
 
-	static const String WS_REQUEST                          = "Request";
-	static const String WS_HEARTBEAT                        = "Heartbeat";
-	static const String WS_REQUEST_WATCH_MEASUREMENTS       = "WatchMeasurements";
-	static const String WS_REQUEST_UNWATCH_MEASUREMENTS     = "UnwatchMeasurements";  
-	static const String WS_REQUEST_WATCH_COMMANDS           = "WatchCommands";
-	static const String WS_REQUEST_UNWATCH_COMMANDS         = "UnwatchCommands";  
-	static const String WS_REQUEST_WATCH_FUNCTION_MODULES   = "WatchFunctionModules";
-	static const String WS_REQUEST_UNWATCH_FUNCTION_MODULES = "UnwatchFunctionModules";
-	static const String WS_REQUEST_WATCH_ALARMS             = "WatchAlarms";
-	static const String WS_REQUEST_UNWATCH_ALARMS           = "UnwatchAlarms";
-	static const String WS_REQUEST_ACK_ALARMS               = "AckAlarms";
-	static const String WS_REQUEST_WRITE_COMMANDS           = "WriteCommands";
+	static const String WS_REQUEST							= "Request";
+	static const String WS_HEARTBEAT						= "Heartbeat";
+	static const String WS_REQUEST_WATCH_MEASUREMENTS		= "WatchMeasurements";
+	static const String WS_REQUEST_UNWATCH_MEASUREMENTS		= "UnwatchMeasurements";  
+	static const String WS_REQUEST_WATCH_COMMANDS			= "WatchCommands";
+	static const String WS_REQUEST_UNWATCH_COMMANDS			= "UnwatchCommands";  
+	static const String WS_REQUEST_WATCH_FUNCTION_MODULES	= "WatchFunctionModules";
+	static const String WS_REQUEST_UNWATCH_FUNCTION_MODULES	= "UnwatchFunctionModules";
+	static const String WS_REQUEST_WATCH_ALARMS				= "WatchAlarms";
+	static const String WS_REQUEST_UNWATCH_ALARMS			= "UnwatchAlarms";
+	static const String WS_REQUEST_ACK_ALARMS				= "AckAlarms";
+	static const String WS_REQUEST_OPERATE_ALARMS			= "OperateAlarms";
+	static const String WS_REQUEST_WRITE_COMMANDS			= "WriteCommands";
+	static const String WS_REQUEST_READ_DATABASE			= "ReadDatabase";
 
 	static const String CS_CONNECTED = "connected", CS_DISCONNECTED = "disconnected", CS_CONNECTING = "connecting";
 
@@ -539,9 +542,8 @@ class OpendafWS {
 		return _mergeAlarmSet();
 	}
 
-	Future<dynamic> writeCommand (String commandName, String newValueWithPrefix) => writeCommands({commandName: newValueWithPrefix});
-
-	Future<dynamic> writeCommands(Map<String, dynamic> commands){
+	Future<dynamic> writeCommand(String commandName, String newValueWithPrefix) => writeCommands({commandName: newValueWithPrefix});
+	Future<dynamic> writeCommands(Map<String, dynamic> /*<name, value>*/ commands){
 		Map<String, dynamic> properties = new Map<String, dynamic>();
 		properties["request"] = WS_REQUEST_WRITE_COMMANDS;
 
@@ -554,6 +556,46 @@ class OpendafWS {
 		});
 
 		properties["writes"] = items;
+		return _ws_request(properties);
+	}
+
+	Future<dynamic> ackAlarm(String alarmName) => ackAlarms([alarmName]);
+	Future<dynamic> ackAlarms(List<String> names){
+		Map<String, dynamic> properties = new Map<String, dynamic>();
+		properties["request"] = WS_REQUEST_ACK_ALARMS;
+		properties["authority"] = "webdaf";
+		properties["alarms"] = new List<String>.from(names);
+		return _ws_request(properties);
+	}
+
+	Future<dynamic> operateAlarm(String alarmName, String operation) => operateAlarms({alarmName: operation});
+	Future<dynamic> operateAlarms(Map<String, String> /*<name, opcode>*/ alarms){
+		Map<String, dynamic> properties = new Map<String, dynamic>();
+		properties["request"] = WS_REQUEST_OPERATE_ALARMS;
+		properties["authority"] = "webdaf";
+
+		List<Map<String, dynamic>> operations = new List<Map<String, dynamic>>();
+		alarms.forEach((key, value) {
+			Map<String, dynamic> item = new Map<String, dynamic>();
+			item["name"] = key;
+			item["opcode"] = value;
+			operations.add(item);
+		});
+
+		properties["operations"] = operations;
+		return _ws_request(properties);
+	}
+
+	Future<dynamic> readDatabase({List<String> measurements, List<String> commands, List<String> alarms}){
+		Map<String, dynamic> properties = new Map<String, dynamic>();
+		properties["request"]	= WS_REQUEST_READ_DATABASE;
+		
+		Map<String, dynamic> select = new Map<String, dynamic>();
+		select["measurements"]	= measurements == null ? "all" : measurements;
+		select["commands"]		= commands == null ? "all" : commands;
+		select["alarms"]		= alarms == null ? "all" : alarms;
+
+		properties["select"] = select;
 		return _ws_request(properties);
 	}
 }
