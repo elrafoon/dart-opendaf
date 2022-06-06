@@ -21,7 +21,7 @@ part 'model/measurement.dart';
 part 'model/command.dart';
 part 'model/field.dart';
 part 'model/function_module.dart';
-part 'model/root.dart';
+part 'model/opendaf_root.dart';
 part 'model/connector.dart';
 part 'model/provider.dart';
 part 'model/stack.dart';
