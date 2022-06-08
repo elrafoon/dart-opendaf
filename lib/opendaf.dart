@@ -79,6 +79,7 @@ class OpenDAF {
 	}
 
 	void useWebSocket({bool autoload}){
+		log("Using WebSocket for communication");
 		DEFAULT_VIA_WS = true;
 
 		ws.autoload = autoload;

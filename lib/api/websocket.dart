@@ -97,6 +97,7 @@ class OpendafWS {
 			log('WebSocket Connected to ' + _url);
 			RECONNECT_TIMEOUT = 0;
 
+			log('Autoload ' + (this.autoload ? "enabled" : "disabled"));
 			if(this.autoload)
 				this.readDatabase();
 
@@ -172,61 +173,62 @@ class OpendafWS {
 						default:
 							throw new Future.error("Notification ${data["notification"]} not implemented!");
 					}
-				}
-
-				if(data.containsKey("database")){
-					List<Map<String, dynamic>> mes = data["database"]["measurements"];
-					List<Map<String, dynamic>> cms = data["database"]["commands"];
-					List<Map<String, dynamic>> als = data["database"]["alarms"];
-
-					if(mes != null){
-						Set<Measurement> m = new Set<Measurement>();
-						mes.forEach((_) {
-							String name = _["name"];
-							if(_opendaf.root.measurements.containsKey(name))
-								_opendaf.root.measurements[name].updateRuntimeJson(_);
-							else
-								_opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, _);
-
-							m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
-						});
-						eventController.add(new MeasurementUpdateNotification()..measurements = m);
-					}
-
-					if(cms != null){
-						Set<Command> c = new Set<Command>();
-						cms.forEach((_) {
-							String name = _["name"];
-							if(_opendaf.root.commands.containsKey(name))
-								_opendaf.root.commands[name].updateRuntimeJson(_);
-							else
-								_opendaf.root.commands[name] = new Command.fromRuntimeJson(this._opendaf, _);
-
-							c.add(new Command.fromRuntimeJson(this._opendaf, _));
-						});
-						eventController.add(new CommandUpdateNotification()..commands = c);
-					}
-
-					if(als != null){
-						Set<Alarm> a = new Set<Alarm>();
-						als.forEach((_) {
-							String name = _["name"];
-							if(_opendaf.root.alarms.containsKey(name))
-								_opendaf.root.alarms[name].updateRuntimeJson(_);
-							else
-								_opendaf.root.alarms[name] = new Alarm.fromRuntimeJson(this._opendaf, _);
-
-							a.add(new Alarm.fromRuntimeJson(this._opendaf, _));
-						});
-						eventController.add(new AlarmStateChangeNotification()..alarms = a);
-					}
-				}
-
-				if (data.containsKey("request_id")){
-					_complete(data["request_id"], data["result"]);
 				} else {
-					throw new Future.error("Message '${data}' parsing not implemented!");
-				};
+					if(data.containsKey("database")){
+						List<Map<String, dynamic>> mes = data["database"]["measurements"];
+						List<Map<String, dynamic>> cms = data["database"]["commands"];
+						List<Map<String, dynamic>> als = data["database"]["alarms"];
+
+						if(mes != null){
+							Set<Measurement> m = new Set<Measurement>();
+							mes.forEach((_) {
+								String name = _["name"];
+								if(_opendaf.root.measurements.containsKey(name))
+									_opendaf.root.measurements[name].updateRuntimeJson(_);
+								else
+									_opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, _);
+
+								m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
+							});
+							eventController.add(new MeasurementUpdateNotification()..measurements = m);
+						}
+
+						if(cms != null){
+							Set<Command> c = new Set<Command>();
+							cms.forEach((_) {
+								String name = _["name"];
+								if(_opendaf.root.commands.containsKey(name))
+									_opendaf.root.commands[name].updateRuntimeJson(_);
+								else
+									_opendaf.root.commands[name] = new Command.fromRuntimeJson(this._opendaf, _);
+
+								c.add(new Command.fromRuntimeJson(this._opendaf, _));
+							});
+							eventController.add(new CommandUpdateNotification()..commands = c);
+						}
+
+						if(als != null){
+							Set<Alarm> a = new Set<Alarm>();
+							als.forEach((_) {
+								String name = _["name"];
+								if(_opendaf.root.alarms.containsKey(name))
+									_opendaf.root.alarms[name].updateRuntimeJson(_);
+								else
+									_opendaf.root.alarms[name] = new Alarm.fromRuntimeJson(this._opendaf, _);
+
+								a.add(new Alarm.fromRuntimeJson(this._opendaf, _));
+							});
+							eventController.add(new AlarmStateChangeNotification()..alarms = a);
+						}
+					}
+
+					if (data.containsKey("request_id")){
+						_complete(data["request_id"], data["result"]);
+					} else {
+						throw new Future.error("Message '${data}' parsing not implemented!");
+					};
+				}
+
 			});
 		});
 
