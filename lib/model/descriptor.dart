@@ -7,9 +7,11 @@ class Descriptor {
 
 	Descriptor([this.measurements, this.commands, this.alarms]);
 
-	Descriptor.fromJson(Map<String, dynamic> js) :
-		measurements	= new Map<String, String>.from(js["measurements"] ?? {}),
-		commands		= new Map<String, String>.from(js["commands"] ?? {}),
-		alarms			= new Map<String, String>.from(js["alarms"] ?? {})
-	;
+	Descriptor.fromJson(Map<String, dynamic> js){
+		if (js == null)
+			return;
+		this.measurements	= new Map<String, String>.from(js["measurements"] ?? {});
+		this.commands		= new Map<String, String>.from(js["commands"] ?? {});
+		this.alarms			= new Map<String, String>.from(js["alarms"] ?? {});
+	}
 }

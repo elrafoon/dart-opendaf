@@ -17,6 +17,9 @@ class Command extends CommunicationObject {
 	// Configuration
 	String initialValue;
 
+	final StreamController<CommandWritten> eventAfterWriteCtrl = new StreamController<CommandWritten>.broadcast();
+	Stream<CommandWritten> eventAfterWrite;
+
 	Command(this._opendaf, { name, description, connectorName, address, datatype, euRangeLow, euRangeHigh, rawDatatype, rawRangeLow, rawRangeHigh, 
 			providerAddresses, this.initialValue, archMode, archPeriod, archValueDeadband, archTimeDeadband, leader, stackUmask, eu, enabled, properties}) 
 		:super(_opendaf, 
@@ -40,7 +43,10 @@ class Command extends CommunicationObject {
 			eu: eu, 
 			enabled: enabled, 
 			properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
-		) { this.updateStackModules(); }
+		) { 
+			eventAfterWrite = eventAfterWriteCtrl.stream;
+			this.updateStackModules(); 
+		}
 
 	Command dup() => new Command(_opendaf, 
 		name: name, 
@@ -74,10 +80,19 @@ class Command extends CommunicationObject {
 		archTimeDeadband: 0,
 		enabled: true,
 		properties: new Map<String, String>()
-	){ this.updateStackModules(); }
+	){ 
+		eventAfterWrite = eventAfterWriteCtrl.stream;
+		this.updateStackModules();
+		}
 
-	Command.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
-	Command.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }
+	Command.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) {
+		eventAfterWrite = eventAfterWriteCtrl.stream;
+		updateConfigurationJson(cfg);
+	}
+	Command.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { 
+		eventAfterWrite = eventAfterWriteCtrl.stream;
+		updateRuntimeJson(runtime);
+	}
 
 		/* Getters */
 	Command get original => _original;
@@ -108,6 +123,7 @@ class Command extends CommunicationObject {
 		if(runtime["vt"] != null)  this.vt = new VT.fromJson(runtime["vt"]);
 
 		this.runtimeLoaded = true;
+		eventAfterWriteCtrl.add(new CommandWritten()..vt);
 		_opendaf.ctrl.command._ls.wsUpdateCounter++;
 	}
 

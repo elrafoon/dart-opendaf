@@ -20,6 +20,9 @@ class Measurement extends CommunicationObject {
 	// Configuration
 	String deadband;
 
+	final StreamController<MeasurementUpdated> eventAfterUpdateCtrl = new StreamController<MeasurementUpdated>.broadcast();
+	Stream<MeasurementUpdated> eventAfterUpdate;
+
 	Measurement(this._opendaf, { name, description, connectorName, address, datatype, euRangeLow, euRangeHigh, rawDatatype, rawRangeLow, rawRangeHigh,
 			providerAddresses, this.deadband, archMode, archPeriod, archValueDeadband, archTimeDeadband, leader, stackUmask, eu, enabled, properties})
 		:super(_opendaf,
@@ -43,7 +46,10 @@ class Measurement extends CommunicationObject {
 			eu: eu,
 			enabled: enabled,
 			properties: properties != null ? new Map<String, dynamic>.from(properties) : new Map<String, dynamic>()
-		){ this.updateStackModules(); }
+		){
+			eventAfterUpdate = eventAfterUpdateCtrl.stream; 
+			this.updateStackModules();
+		}
 
 	Measurement dup() => new Measurement(_opendaf,
 		name: name,
@@ -77,9 +83,18 @@ class Measurement extends CommunicationObject {
 		archTimeDeadband: 0,
 		enabled: true,
 		properties: new Map<String, String>()
-	){ this.updateStackModules(); }
-	Measurement.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { updateConfigurationJson(cfg); }
-	Measurement.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { updateRuntimeJson(runtime); }
+	){ 
+		eventAfterUpdate = eventAfterUpdateCtrl.stream;
+		this.updateStackModules(); 
+	}
+	Measurement.fromCfgJson(this._opendaf, Map<String, dynamic> cfg) : super(_opendaf) { 
+		eventAfterUpdate = eventAfterUpdateCtrl.stream;
+		updateConfigurationJson(cfg); 
+	}
+	Measurement.fromRuntimeJson(this._opendaf, Map<String, dynamic> runtime) : super(_opendaf) { 
+		eventAfterUpdate = eventAfterUpdateCtrl.stream;
+		updateRuntimeJson(runtime);
+	}
 
 	/* Getters */
 	Measurement get original => _original;
@@ -101,6 +116,7 @@ class Measurement extends CommunicationObject {
 		if(runtime["vtq"] != null)	this.vtq = new VTQ.fromJson(runtime["vtq"]);
 
 		this.runtimeLoaded = true;
+		this.eventAfterUpdateCtrl.add(new MeasurementUpdated()..vtq);
 		_opendaf.ctrl.measurement._ls.wsUpdateCounter++;
 	}
 

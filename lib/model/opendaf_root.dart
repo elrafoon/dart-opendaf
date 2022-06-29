@@ -2,6 +2,9 @@ part of opendaf;
 
 abstract class StreamEvent {}
 
+class MeasurementUpdated extends StreamEvent{ VTQ vtq; }
+class CommandWritten extends StreamEvent{ VT vt; }
+
 class MeasurementsSetChanged extends StreamEvent{ }
 class CommandsSetChanged extends StreamEvent{ }
 class ConnectorsSetChanged extends StreamEvent{ }
@@ -49,7 +52,7 @@ class OpendafRoot {
 		return measurements[name];
 	}
 	Measurement getMeasurementFromDesc(String key, Descriptor desc, { bool autocreate = true }){
-		return getMeasurement(desc.measurements[key], autocreate: autocreate);
+		return desc.measurements[key] != null ? getMeasurement(desc.measurements[key], autocreate: autocreate) : null;
 	}
 
 	Command getCommand(String name, { bool autocreate = false }){
@@ -61,7 +64,7 @@ class OpendafRoot {
 		return commands[name];
 	}
 	Command getCommandFromDesc(String key, Descriptor desc, { bool autocreate = true }){
-		return getCommand(desc.commands[key], autocreate: autocreate);
+		return desc.commands[key] != null ? getCommand(desc.commands[key], autocreate: autocreate) : null;
 	}
 
 	Alarm getAlarm(String name, { bool autocreate = false }){
@@ -73,7 +76,7 @@ class OpendafRoot {
 		return alarms[name];
 	}
 	Alarm getAlarmFromDesc(String key, Descriptor desc, { bool autocreate = true }){
-		return getAlarm(desc.alarms[key], autocreate: autocreate);
+		return desc.alarms[key] != null ? getAlarm(desc.alarms[key], autocreate: autocreate) : null;
 	}
 }
 
