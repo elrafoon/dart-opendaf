@@ -220,6 +220,15 @@ class Measurement extends CommunicationObject {
 
 	Future cancelSimulation() => _opendaf.api.stopMeasurementSimulation(name);
 
+	static Measurement newer(Measurement a, Measurement b, [bool qualityCheck = false]){
+		if(a == null || a.vtq == null || (qualityCheck && !a.isGood))
+			return b;
+		else if(b == null || b.vtq == null || (qualityCheck && !b.isGood))
+			return a;
+		else
+			return (a.vtq.timestamp.microsecondsSinceEpoch >= b.vtq.timestamp.microsecondsSinceEpoch) ? a : b;
+	}
+
 	dynamic operator[](String key) {
 		switch(key){
 			case "deadband":	return this.deadband;
