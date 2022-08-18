@@ -2,11 +2,29 @@ part of opendaf;
 
 enum EAlarmState { AS_ACT_UNACK, AS_ACT_ACK, AS_INACT_UNACK, AS_INACT_ACK }
 
+class AlarmTriggerOperator {
+	String op;
+	String operand;
+	String description;
+
+	AlarmTriggerOperator(this.op, this.operand, this.description);
+}
+
 class Alarm {
 	static const String AOP_ACTIVATE = "activate", AOP_DEACTIVATE = "deactivate", AOP_ACKNOWLEDGE = "acknowledge";
 	static const String AM_NONE = "none", AM_CHANGE = "change";
 	static List<String> get archModeList => [ AM_NONE, AM_CHANGE ];
 	static List<String> get ackModeList => [ "manual", "auto" ];
+
+	static List<AlarmTriggerOperator> trgOperators = [
+		new AlarmTriggerOperator("lt", "<", "Less Than"),
+		new AlarmTriggerOperator("le", "<=", "Less or Equal"),
+		new AlarmTriggerOperator("gt", ">", "Greater Than"),
+		new AlarmTriggerOperator("ge", ">=", "Greater or Equal"),
+		new AlarmTriggerOperator("ne", "!=", "Not Equal"),
+		new AlarmTriggerOperator("eq", "==", "Equal")
+	];
+	static List<String> get trgOperatorList => trgOperators.map((AlarmTriggerOperator _) => _.op).toList();
 
 	final OpenDAF _opendaf;
 
@@ -26,6 +44,11 @@ class Alarm {
 	String archMode = AM_CHANGE;
 	String ackMode = "manual";
 	bool enabled = true;
+	String trgMeasurement;
+	String trgOperator;
+	String trgRefValue;
+	String trgHysteresis;
+	String groupName;
 
 	Map<String, dynamic> properties = new Map<String, dynamic>();
 	bool configurationLoaded;
@@ -42,7 +65,8 @@ class Alarm {
 
 	static DateTime getDate(DateTime t) => new DateTime(t.year, t.month, t.day);
 
-	Alarm(this._opendaf, {this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled, this.properties = const {}});
+	Alarm(this._opendaf, {this.name, this.description, this.severity, this.archMode, this.ackMode, this.enabled,
+		this.trgMeasurement, this.trgOperator, this.trgRefValue, this.trgHysteresis, this.groupName, this.properties = const {}});
 
 	Alarm.empty(this._opendaf);
 
@@ -91,6 +115,16 @@ class Alarm {
 			this.ackMode = cfg["ackMode"];
 		if(cfg["enabled"] != null)
 			this.enabled = cfg["enabled"];
+		if(cfg["trgMeasurement"] != null)
+			this.trgMeasurement = cfg["trgMeasurement"];
+		if(cfg["trgOperator"] != null)
+			this.trgOperator = cfg["trgOperator"];
+		if(cfg["trgRefValue"] != null)
+			this.trgRefValue = cfg["trgRefValue"];
+		if(cfg["trgHysteresis"] != null)
+			this.trgHysteresis = cfg["trgHysteresis"];
+		if(cfg["groupName"] != null)
+			this.groupName = cfg["groupName"];
 
 		if(cfg["properties"] != null)
 			this.properties = cfg["properties"];
@@ -107,6 +141,11 @@ class Alarm {
 		archMode: archMode,
 		ackMode: ackMode,
 		enabled: enabled,
+		trgMeasurement: trgMeasurement,
+		trgOperator: trgOperator,
+		trgRefValue: trgRefValue,
+		trgHysteresis: trgHysteresis,
+		groupName: groupName,
 		properties: new Map<String, dynamic>.from(properties)
 	);
 
@@ -115,13 +154,18 @@ class Alarm {
 		if(other == null)
 			return;
 		
-		this.name         = other.name;
-		this.description  = other.description;
-		this.severity     = other.severity;
-		this.archMode     = other.archMode;
-		this.ackMode      = other.ackMode;
-		this.enabled      = other.enabled;
-		this.properties   = new Map<String, dynamic>.from(other.properties);
+		this.name			= other.name;
+		this.description	= other.description;
+		this.severity		= other.severity;
+		this.archMode		= other.archMode;
+		this.ackMode		= other.ackMode;
+		this.enabled		= other.enabled;
+		this.trgMeasurement	= other.trgMeasurement;
+		this.trgOperator	= other.trgOperator;
+		this.trgRefValue	= other.trgRefValue;
+		this.trgHysteresis	= other.trgHysteresis;
+		this.groupName		= other.groupName;
+		this.properties		= new Map<String, dynamic>.from(other.properties);
 
 		this.cfg_stash();
 	}
@@ -138,12 +182,17 @@ class Alarm {
 		});
 
 		return propertiesMatch &&
-			this.name         == other.name         &&
-			this.description  == other.description  &&
-			this.severity     == other.severity     &&
-			this.archMode     == other.archMode     &&
-			this.ackMode      == other.ackMode      &&
-			this.enabled      == other.enabled      ;
+			this.name			== other.name			&&
+			this.description	== other.description	&&
+			this.severity		== other.severity		&&
+			this.archMode		== other.archMode		&&
+			this.ackMode		== other.ackMode		&&
+			this.trgMeasurement	== other.trgMeasurement	&&
+			this.trgOperator	== other.trgOperator	&&
+			this.trgRefValue	== other.trgRefValue	&&
+			this.trgHysteresis	== other.trgHysteresis	&&
+			this.groupName		== other.groupName		&&
+			this.enabled		== other.enabled		;
 	}
 
 	void cfg_stash() {
@@ -161,6 +210,11 @@ class Alarm {
 		"archMode": archMode,
 		"ackMode": ackMode,
 		"enabled": enabled,
+		"trgMeasurement": trgMeasurement,
+		"trgOperator": trgOperator,
+		"trgRefValue": trgRefValue,
+		"trgHysteresis": trgHysteresis,
+		"groupName": groupName,
 		"properties": properties
 	};
 
@@ -197,21 +251,31 @@ class Alarm {
 		|| regex.hasMatch(description ?? "")
 		|| regex.hasMatch(archMode ?? "")
 		|| regex.hasMatch(authority ?? "")
+		|| regex.hasMatch(trgMeasurement ?? "")
+		|| regex.hasMatch(trgOperator ?? "")
+		|| regex.hasMatch(trgRefValue ?? "")
+		|| regex.hasMatch(trgHysteresis ?? "")
+		|| regex.hasMatch(groupName ?? "")
 	;
 
 	dynamic operator[](String key) {
 		switch(key){
-			case "name": 		return this.name;
-			case "state": 		return this.state;
-			case "stateNumber": return this.stateNumber;
-			case "authority": 	return this.authority;
-			case "timestamp": 	return this.timestamp;
-			case "description":	return this.description;
-			case "severity": 	return this.severity;
-			case "archMode": 	return this.archMode;
-			case "ackMode": 	return this.ackMode;
-			case "enabled": 	return this.enabled;
-			default:			return this.properties[key];
+			case "name": 			return this.name;
+			case "state": 			return this.state;
+			case "stateNumber": 	return this.stateNumber;
+			case "authority": 		return this.authority;
+			case "timestamp": 		return this.timestamp;
+			case "description":		return this.description;
+			case "severity": 		return this.severity;
+			case "archMode": 		return this.archMode;
+			case "ackMode": 		return this.ackMode;
+			case "enabled": 		return this.enabled;
+			case "trgMeasurement": 	return this.trgMeasurement;
+			case "trgOperator": 	return this.trgOperator;
+			case "trgRefValue": 	return this.trgRefValue;
+			case "trgHysteresis": 	return this.trgHysteresis;
+			case "groupName": 		return this.groupName;
+			default:				return this.properties[key];
 		}
 	}
 }

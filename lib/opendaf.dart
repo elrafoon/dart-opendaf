@@ -10,6 +10,7 @@ import 'dart:html' as html;
 import 'package:intl/intl.dart';
 
 part 'model/alarm.dart';
+part 'model/alarmGroup.dart';
 part 'model/datatype.dart';
 part 'model/quality.dart';
 part 'model/value.dart';
@@ -30,6 +31,7 @@ part 'model/descriptor.dart';
 part 'model/confObject.dart';
 
 part 'controller/alarm.dart';
+part 'controller/alarmGroup.dart';
 part 'controller/measurement.dart';
 part 'controller/command.dart';
 part 'controller/provider.dart';

@@ -5,6 +5,7 @@ class OpendafController {
 	final OpenDAF _opendaf;
 
 	AlarmController alarm;
+	AlarmGroupController alarmGroup;
 	FunctionModuleController fm;
 	MeasurementController measurement;
 	CommandController command;
@@ -15,6 +16,7 @@ class OpendafController {
 
 	OpendafController (this._opendaf, this._http){
 		alarm           = new AlarmController(this._opendaf, this._http);
+		alarmGroup      = new AlarmGroupController(this._opendaf, this._http);
 		fm              = new FunctionModuleController(this._opendaf, this._http);
 		measurement     = new MeasurementController(this._opendaf, this._http);
 		command         = new CommandController(this._opendaf, this._http);
@@ -32,6 +34,7 @@ class OpendafController {
 		command.reload(options: options),
 		measurement.reload(options: options),
 		alarm.reload(options: options),
+		alarmGroup.reload(options: options),
 		fm.reload(options: options),
 	]);
 }

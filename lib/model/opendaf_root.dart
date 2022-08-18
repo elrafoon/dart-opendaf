@@ -13,6 +13,7 @@ class ConnectorStacksSetChanged extends StreamEvent{ }
 class ProviderStacksSetChanged extends StreamEvent{ }
 class FunctionModulesSetChanged extends StreamEvent{ }
 class AlarmsSetChanged extends StreamEvent{ }
+class AlarmGroupsSetChanged extends StreamEvent{ }
 
 class ModelException implements Exception {}
 class ProviderAddressesException extends ModelException {
@@ -33,8 +34,9 @@ class OpendafRoot {
 	final Map<String, Stack> providerStacks = new SplayTreeMap<String, Stack>();
 	final Map<String, FunctionModule> functionModules = new SplayTreeMap<String, FunctionModule>();
 	final Map<String, Alarm> alarms = new SplayTreeMap<String, Alarm>();
+	final Map<String, AlarmGroup> alarmGroups = new SplayTreeMap<String, AlarmGroup>();
 
-	bool measurementsLoaded, commandsLoaded, functionModulesLoaded, alarmsLoaded, connectorsLoaded, providersLoaded, connectorStacksLoaded, providerStacksLoaded;
+	bool measurementsLoaded, commandsLoaded, functionModulesLoaded, alarmsLoaded, alarmGroupsLoaded, connectorsLoaded, providersLoaded, connectorStacksLoaded, providerStacksLoaded;
 
 	final StreamController<StreamEvent> eventController = new StreamController<StreamEvent>.broadcast();
 	Stream<StreamEvent> eventStream;
