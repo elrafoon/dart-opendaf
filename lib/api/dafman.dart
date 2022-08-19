@@ -30,10 +30,25 @@ class OpendafDafman {
 			new Uri(path: "$prefix/$path/$name"),
 			body: JSON.encode(js),
 			headers: OpenDAF._headers
-		);
+		).then((http.Response response) {
+			switch(response.statusCode){
+				case 204:
+					return null;
+				default:
+					return new Future.error("Cannot update $name: ${response.statusCode}");
+			}
+		});
 
 	Future delete(String path, String name) =>
-		_http.delete("$prefix/$path/$name");
+		_http.delete("$prefix/$path/$name")
+		.then((http.Response response) {
+			switch(response.statusCode){
+				case 204:
+					return null;
+				default:
+					return new Future.error("Cannot delete $name: ${response.statusCode}");
+			}
+		});
 
 	Future<http.Response> item(String path, String name, {RequestOptions options}) =>
 		_http.get("$prefix/$path/$name", headers: OpenDAF._headers);
