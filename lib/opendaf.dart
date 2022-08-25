@@ -44,6 +44,7 @@ part 'controller/controller.dart';
 part 'api/api.dart';
 part 'api/archive.dart';
 part 'api/dafman.dart';
+part 'api/dispatcher.dart';
 part 'api/websocket.dart';
 
 
@@ -51,7 +52,7 @@ part 'api/websocket.dart';
 class OpenDAF {
 	static Map<String, String> _headers = { "Content-Type" : "application/json; charset=UTF-8" };
 	static const int MAX_NAMES_IN_REQUEST = 500;
-	static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
+	static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_DISPATCHER = 4, RCFG_AUTO = 256;
 
 	final http.Client _http;
 
@@ -62,6 +63,7 @@ class OpenDAF {
 	OpendafApi api;
 	OpendafDafman dafman;
 	OpendafArchive archive;
+	OpenDAFDispatcher dispatcher;
 	OpendafWS ws;
 	bool DEFAULT_VIA_WS = false;
 
@@ -74,7 +76,8 @@ class OpenDAF {
 		api		= new OpendafApi(this, this._http);
 		dafman	= new OpendafDafman(this, this._http);
 		archive	= new OpendafArchive(this, this._http);
-		ws		= new OpendafWS(this, this._http);
+		dispatcher = new OpenDAFDispatcher(this, this._http);
+		ws = new OpendafWS(this, this._http);
 	}
 
 	void log(String message, [String origin]){
@@ -103,22 +106,30 @@ class OpenDAF {
 		]);
 	}
 
-	Future reconfigure([int mask = RCFG_AUTO]) {
+	Future reconfigure([int mask = RCFG_AUTO]) async {
 		print("Reconfiguring with mask $mask");
 		if(mask != RCFG_AUTO) {
-			Future f = ((mask & RCFG_OPENDAF) != 0) ? api.reconfigure() : new Future.value();
-			return ((mask & RCFG_ARCHIVE) != 0) ? f.then((_) => archive.reconfigure()) : f;
+			if((mask & RCFG_OPENDAF) != 0)
+				await api.reconfigure();
+
+			if((mask & RCFG_ARCHIVE) != 0)
+				await archive.reconfigure();
+
+			if((mask & RCFG_DISPATCHER) != 0)
+				await dispatcher.reconfigure();
 		}
 		else {
 			return Future.wait([
 				pid.catchError((e) => null).then((_) => (_ == null) ? null : api.reconfigure()),
-				archivePid.catchError((e) => null).then((_) => (_ == null) ? null : archive.reconfigure())
+				archivePid.catchError((e) => null).then((_) => (_ == null) ? null : archive.reconfigure()),
+				dispatcherPid.catchError((e) => null).then((_) => (_ == null) ? null : dispatcher.reconfigure())
 			]);
 		}
 	}
 
 	Future<int> get pid => api.pid;
 	Future<int> get archivePid => archive.pid;
+	Future<int> get dispatcherPid => dispatcher.pid;
 
 	Future downloadDatabase() => dafman.downloadDatabase();
 	Future uploadDatabase(File database, {bool render: true}) => dafman.uploadDatabase(database, render: render);

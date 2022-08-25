@@ -1,7 +1,6 @@
 part of opendaf;
 
 class OpendafApi {
-	static const int RCFG_OPENDAF = 1, RCFG_ARCHIVE = 2, RCFG_AUTO = 4;
 	static String prefix = "/opendaf";
 	final OpenDAF _opendaf;
 	final http.Client _http;
