@@ -22,4 +22,15 @@ abstract class ConfObject {
 	dynamic get id;
 	String get identification;
 	@override toString() => identification;
+
+	static emptyToNull(String x) => (x is String && x.isEmpty) ? null : x;
+	static toJsIfNotNull(Map<String, dynamic> js, String key, dynamic value){
+		if(value != null)
+			js[key] = value;
+	}
+
+	static toJsIfNotEmpty(Map<String, dynamic> js, String key, dynamic value){
+		if(value != null && ConfObject.emptyToNull(value) != null)
+			js[key] = value;
+	}
 }
