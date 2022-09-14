@@ -120,53 +120,53 @@ class OpendafWS {
 
 						case WS_RESPONSE_ALARMS_STATE_CHANGE_NOTIFICATION:
 							Set<Alarm> a = new Set<Alarm>();
-							data["changes"].forEach((_) {
+							for(Map<String, dynamic> _ in data["changes"]){
 								String name = _["name"];
 
 								if(_opendaf.root.alarms.containsKey(name))
 									_opendaf.root.alarms[name].updateRuntimeJson(_);
 									
 								a.add(new Alarm.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new AlarmStateChangeNotification()..alarms = a);
 						break;
 
 						case WS_RESPONSE_COMMAND_UPDATE_NOTIFICATION:
 							Set<Command> c = new Set<Command>();
-							data["updates"].forEach((_) {
+							for(Map<String, dynamic> _ in data["updates"]){
 								String name = _["name"];
 
 								if(_opendaf.root.commands.containsKey(name))
 									_opendaf.root.commands[name].updateRuntimeJson(_);
 									
 								c.add(new Command.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new CommandUpdateNotification()..commands = c);
 						break;
 
 						case WS_RESPONSE_FUNCTION_MODULE_UPDATE_NOTIFICATION:
 							Set<FunctionModule> f = new Set<FunctionModule>();
-							data["updates"].forEach((_) {
+							for(Map<String, dynamic> _ in data["updates"]){
 								String name = _["name"];
 
 								if(_opendaf.root.functionModules.containsKey(name))
 									_opendaf.root.functionModules[name].updateRuntimeJson(_);
 									
 								f.add(new FunctionModule.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new FunctionModuleUpdateNotification()..functionModules = f);
 						break;
 
 						case WS_RESPONSE_MEASUREMENT_UPDATE_NOTIFICATION:
 							Set<Measurement> m = new Set<Measurement>();
-							data["updates"].forEach((_) {
+							for(Map<String, dynamic> _ in data["updates"]){
 								String name = _["name"];
 
 								if(_opendaf.root.measurements.containsKey(name))
 									_opendaf.root.measurements[name].updateRuntimeJson(_);
 
 								m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new MeasurementUpdateNotification()..measurements = m);
 						break;
 
@@ -181,7 +181,7 @@ class OpendafWS {
 
 						if(mes != null){
 							Set<Measurement> m = new Set<Measurement>();
-							mes.forEach((_) {
+							for(Map<String, dynamic> _ in mes){
 								String name = _["name"];
 								if(_opendaf.root.measurements.containsKey(name))
 									_opendaf.root.measurements[name].updateRuntimeJson(_);
@@ -189,13 +189,13 @@ class OpendafWS {
 									_opendaf.root.measurements[name] = new Measurement.fromRuntimeJson(this._opendaf, _);
 
 								m.add(new Measurement.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new MeasurementUpdateNotification()..measurements = m);
 						}
 
 						if(cms != null){
 							Set<Command> c = new Set<Command>();
-							cms.forEach((_) {
+							for(Map<String, dynamic> _ in cms){
 								String name = _["name"];
 								if(_opendaf.root.commands.containsKey(name))
 									_opendaf.root.commands[name].updateRuntimeJson(_);
@@ -203,13 +203,13 @@ class OpendafWS {
 									_opendaf.root.commands[name] = new Command.fromRuntimeJson(this._opendaf, _);
 
 								c.add(new Command.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new CommandUpdateNotification()..commands = c);
 						}
 
 						if(als != null){
 							Set<Alarm> a = new Set<Alarm>();
-							als.forEach((_) {
+							for(Map<String, dynamic> _ in als){
 								String name = _["name"];
 								if(_opendaf.root.alarms.containsKey(name))
 									_opendaf.root.alarms[name].updateRuntimeJson(_);
@@ -217,9 +217,11 @@ class OpendafWS {
 									_opendaf.root.alarms[name] = new Alarm.fromRuntimeJson(this._opendaf, _);
 
 								a.add(new Alarm.fromRuntimeJson(this._opendaf, _));
-							});
+							}
 							eventController.add(new AlarmStateChangeNotification()..alarms = a);
 						}
+
+						_opendaf.root.eventController.add(new OpendafRootLoaded());
 					}
 
 					if (data.containsKey("request_id")){
