@@ -263,7 +263,7 @@ class OpendafWS {
 			_completers.putIfAbsent(message["id"], () => completer);
 
 			/// Send message
-			log(message["request"] + " (${message["id"]})");
+			// log(message["request"] + " (${message["id"]})");
 			_ws.send(JSON.encode(message));
 
 			/// Add default timeout completion
@@ -285,8 +285,8 @@ class OpendafWS {
 
 			if (!result)
 				log("Response ($id) completerError: $reason");
-			else
-				log("Response ($id) completed.");
+			// else/
+				// log("Response ($id) completed.");
 		}
 	}
 

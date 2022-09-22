@@ -45,6 +45,7 @@ class OpendafRoot {
 
 	OpendafRoot(this._opendaf) {
 		eventStream = eventController.stream;
+		eventStream.where((StreamEvent evt) => evt is OpendafRootLoaded).listen((StreamEvent evt) => this.loaded = true);
 	}
 
 	Measurement getMeasurement(String name, { bool autocreate = false }){
