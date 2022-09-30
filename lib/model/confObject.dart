@@ -14,7 +14,7 @@ abstract class ConfObject {
 	}
 
 	Map<String, dynamic> toCfgJson() {
-		return new Map<String, dynamic>.from(rawModel);
+		return new Map<String, dynamic>();
 	}
 
 	void attachRuntime(OpenDAF _opendaf);
